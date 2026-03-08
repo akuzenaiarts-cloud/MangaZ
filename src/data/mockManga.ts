@@ -164,6 +164,7 @@ export const mockManga: Manga[] = [
     id: '5',
     slug: 'cherry-blossom-love',
     title: 'Cherry Blossom Love',
+    altTitles: ['桜の恋', 'Sakura Romance'],
     cover: '/manga/cover5.jpg',
     banner: '/manga/cover5.jpg',
     description: 'A heartwarming romance between two childhood friends who reunite under the cherry blossoms. As seasons change, their feelings bloom into something deeper than friendship.',
