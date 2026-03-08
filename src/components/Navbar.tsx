@@ -119,32 +119,32 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-border/30 bg-background animate-fade-up">
+          <div className="md:hidden border-t border-white/10 bg-background/80 backdrop-blur animate-fade-up">
             <div className="px-6 sm:px-10 lg:px-16 xl:px-24 py-4 flex flex-col gap-2">
-              <Button variant="secondary" className="w-full justify-start gap-2 rounded-full" onClick={() => { setSearchOpen(true); setMobileOpen(false); }}>
+              <Button variant="ghost" className="w-full justify-start gap-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur" onClick={() => { setSearchOpen(true); setMobileOpen(false); }}>
                 <Search className="w-4 h-4" /> Search
               </Button>
               <Link to="/latest" onClick={() => setMobileOpen(false)}>
-                <Button variant={isActive('/latest') ? 'default' : 'secondary'} className="w-full justify-start gap-2 rounded-full">
+                <Button variant="ghost" className={`w-full justify-start gap-2 rounded-full ${isActive('/latest') ? 'bg-white/20' : 'bg-white/10 hover:bg-white/20'} backdrop-blur`}>
                   <ClipboardList className="w-4 h-4" /> Latest
                 </Button>
               </Link>
               <Link to="/series" onClick={() => setMobileOpen(false)}>
-                <Button variant={isActive('/series') ? 'default' : 'secondary'} className="w-full justify-start gap-2 rounded-full">
+                <Button variant="ghost" className={`w-full justify-start gap-2 rounded-full ${isActive('/series') ? 'bg-white/20' : 'bg-white/10 hover:bg-white/20'} backdrop-blur`}>
                   <LayoutGrid className="w-4 h-4" /> Series
                 </Button>
               </Link>
               <Link to="/library" onClick={() => setMobileOpen(false)}>
-                <Button variant={isActive('/library') ? 'default' : 'secondary'} className="w-full justify-start gap-2 rounded-full">
+                <Button variant="ghost" className={`w-full justify-start gap-2 rounded-full ${isActive('/library') ? 'bg-white/20' : 'bg-white/10 hover:bg-white/20'} backdrop-blur`}>
                   <BarChart3 className="w-4 h-4" /> Library
                 </Button>
               </Link>
               {isAuthenticated ? (
-                <Button variant="secondary" className="w-full justify-start gap-2 rounded-full" onClick={() => { logout(); setMobileOpen(false); }}>
+                <Button variant="ghost" className="w-full justify-start gap-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur" onClick={() => { logout(); setMobileOpen(false); }}>
                   <LogOut className="w-4 h-4" /> Sign Out
                 </Button>
               ) : (
-                <Button variant="secondary" className="w-full justify-start gap-2 rounded-full" onClick={() => { setShowLoginModal(true); setMobileOpen(false); }}>
+                <Button variant="ghost" className="w-full justify-start gap-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur" onClick={() => { setShowLoginModal(true); setMobileOpen(false); }}>
                   <LogIn className="w-4 h-4" /> Sign in
                 </Button>
               )}
