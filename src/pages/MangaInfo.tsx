@@ -233,11 +233,7 @@ export default function MangaInfo() {
             <Link
               key={m.id}
               to={`/manga/${m.slug}`}
-              className={`flex items-center gap-3.5 p-3.5 rounded-xl transition-colors group ${
-                m.slug === slug
-                  ? 'bg-primary/10 border border-primary/30'
-                  : 'bg-secondary/40 border border-border/30 hover:bg-secondary/70'
-              }`}
+              className="flex items-center gap-3.5 p-3.5 rounded-xl transition-colors group bg-secondary/40 border border-border/30 hover:bg-secondary/70"
             >
               <img src={m.cover} alt="" className="w-14 h-[76px] object-cover rounded-lg shrink-0" />
               <span className="text-2xl font-bold text-muted-foreground/40 shrink-0 w-7 text-center">{i + 1}</span>
