@@ -69,7 +69,7 @@ export default function MangaInfo() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap overflow-hidden">
                 <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${manga.status === 'Ongoing' ? 'bg-green-600 text-white' : manga.status === 'Completed' ? 'bg-red-600 text-white' : 'bg-yellow-600 text-white'}`}>
                   {manga.status}
                 </span>
