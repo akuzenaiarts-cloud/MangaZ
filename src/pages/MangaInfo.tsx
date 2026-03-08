@@ -42,7 +42,7 @@ export default function MangaInfo() {
 
   return (
     <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-6">
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col xl:flex-row gap-6">
         {/* Main Content */}
         <div className="flex-1 min-w-0 space-y-5">
           {/* Header: Cover + Info */}
@@ -204,7 +204,7 @@ export default function MangaInfo() {
         </div>
 
         {/* Trending Sidebar */}
-        <aside className="w-full lg:w-80 xl:w-[360px] shrink-0 space-y-1.5">
+        <aside className="w-full xl:w-[360px] shrink-0 space-y-1.5">
           {trending.map((m, i) => (
             <Link
               key={m.id}
