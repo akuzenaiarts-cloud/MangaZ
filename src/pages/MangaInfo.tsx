@@ -235,7 +235,7 @@ export default function MangaInfo() {
                 <div className="flex items-center gap-1.5 mt-1">
                   <TypeBadge type={m.type} />
                   {m.status === 'Completed' && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-600 text-white font-medium">Completed</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-600 text-white font-medium">Completed</span>
                   )}
                 </div>
               </div>
