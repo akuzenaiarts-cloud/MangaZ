@@ -30,7 +30,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/30">
+      <nav className="sticky top-0 z-50 bg-transparent">
         <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 flex h-16 items-center justify-between">
           {/* Logo */}
           {isSubPage ? (
