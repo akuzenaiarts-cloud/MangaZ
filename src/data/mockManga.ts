@@ -187,6 +187,7 @@ export const mockManga: Manga[] = [
       number: 24 - i,
       title: `Chapter ${24 - i}`,
       date: new Date(2026, 1, 20 - i).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      premium: i < 2,
     })),
     comments: [],
   },
