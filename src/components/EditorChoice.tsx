@@ -34,12 +34,12 @@ export default function EditorChoice() {
             <p className="text-sm text-muted-foreground line-clamp-3 mb-4 sm:mb-5 max-w-lg">{manga.description}</p>
 
             {/* Covers row */}
-            <div className="flex gap-2 mb-5">
+            <div className="flex gap-2 mb-4 sm:mb-5 overflow-x-auto scrollbar-hide pb-1">
               {featured.map((m, i) => (
                 <button
                   key={m.id}
                   onClick={() => setCurrent(i)}
-                  className={`w-28 h-40 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-40 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                     i === current ? 'border-primary scale-105' : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
