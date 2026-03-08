@@ -14,6 +14,10 @@ import ChapterReader from "./pages/ChapterReader";
 import Latest from "./pages/Latest";
 import Series from "./pages/Series";
 import Library from "./pages/Library";
+import EarnCoins from "./pages/EarnCoins";
+import CoinShop from "./pages/CoinShop";
+import UserSettings from "./pages/UserSettings";
+import DMCA from "./pages/DMCA";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +37,10 @@ const AppLayout = () => {
           <Route path="/latest" element={<Latest />} />
           <Route path="/series" element={<Series />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/earn" element={<EarnCoins />} />
+          <Route path="/coin-shop" element={<CoinShop />} />
+          <Route path="/settings" element={<UserSettings />} />
+          <Route path="/dmca" element={<DMCA />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
