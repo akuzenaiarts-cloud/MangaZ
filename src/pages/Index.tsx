@@ -96,6 +96,7 @@ export default function Index() {
 
       {/* Completed Series */}
       <CompletedSeries />
+      </div>
     </div>
   );
 }
