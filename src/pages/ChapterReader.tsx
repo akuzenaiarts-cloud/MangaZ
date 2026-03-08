@@ -208,45 +208,6 @@ export default function ChapterReader() {
                     </div>
                   </Link>
                 )}
-                <div>
-                  <Button variant="outline" size="sm" className="rounded-full gap-1.5 mt-2">
-                    <Settings className="w-3.5 h-3.5" /> Options
-                  </Button>
-                </div>
-              </div>
-
-              {/* Share */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/40 border-l-2 border-primary">
-                <div>
-                  <p className="text-sm font-semibold">Share MangaRead</p>
-                  <p className="text-xs text-muted-foreground">to your friends</p>
-                </div>
-                <Button variant="default" size="icon" className="rounded-full h-9 w-9">
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </div>
-
-              {/* Report & Discord */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/40 border-l-2 border-destructive">
-                  <div>
-                    <p className="text-sm font-semibold">Facing an Issue?</p>
-                    <p className="text-xs text-muted-foreground">Let us know, and we'll help ASAP</p>
-                  </div>
-                  <Button variant="destructive" size="sm" className="rounded-full gap-1.5 shrink-0">
-                    <Flag className="w-3.5 h-3.5" /> Report
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/40 border-l-2 border-[hsl(235,86%,65%)]">
-                  <div>
-                    <p className="text-sm font-semibold">Join Our Socials</p>
-                    <p className="text-xs text-muted-foreground">to explore more</p>
-                  </div>
-                  <Button size="sm" className="rounded-full gap-1.5 shrink-0 bg-[hsl(235,86%,65%)] hover:bg-[hsl(235,86%,55%)]">
-                    <MessageSquare className="w-3.5 h-3.5" /> Discord
-                  </Button>
-                </div>
-              </div>
 
               {/* Reactions */}
               <div className="text-center space-y-4 py-4">
