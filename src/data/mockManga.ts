@@ -159,6 +159,7 @@ export const mockManga: Manga[] = [
       number: 52 - i,
       title: `Chapter ${52 - i}`,
       date: new Date(2026, 2, 8 - i).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      premium: i < 2,
     })),
     comments: [
       { id: 1, user: 'CyberFan', avatar: '', text: 'Best cyberpunk manhwa out there!', date: '1 hour ago', likes: 33 },
