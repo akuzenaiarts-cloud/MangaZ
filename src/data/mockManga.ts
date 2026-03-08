@@ -189,6 +189,7 @@ export const mockManga: Manga[] = [
     id: '6',
     slug: 'phantom-corridor',
     title: 'Phantom Corridor',
+    altTitles: ['유령 복도', 'Ghost Corridor'],
     cover: '/manga/cover6.jpg',
     banner: '/manga/cover6.jpg',
     description: 'A group of students discover a hidden corridor in their school that leads to a nightmarish dimension. To escape, they must confront their deepest fears and survive the horrors within.',
