@@ -85,8 +85,11 @@ export default {
   			manga: {
   				manhwa: 'hsl(var(--manga-manhwa))',
   				manga: 'hsl(var(--manga-manga))',
-  				manhua: 'hsl(var(--manga-manhua))'
-  			},
+   				manhua: 'hsl(var(--manga-manhua))'
+   			},
+   			coin: {
+   				gold: 'hsl(var(--coin-gold))'
+   			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
