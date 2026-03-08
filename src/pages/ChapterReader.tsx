@@ -130,9 +130,7 @@ export default function ChapterReader() {
         </div>
       </header>
 
-      <div className="lg:flex">
-        {/* Main Reader Area */}
-        <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
           <div className="w-full px-2 sm:px-4 py-4 sm:py-8">
             {/* Pages */}
             <div className="space-y-2 sm:space-y-4 mb-6 sm:mb-8">
@@ -235,10 +233,10 @@ export default function ChapterReader() {
                     <button
                       key={r.key}
                       onClick={() => handleReaction(r.key)}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-xl w-full transition-colors ${
+                      className={`flex flex-col items-center gap-1 p-3 rounded-xl w-full transition-colors border ${
                         selectedReaction === r.key
-                          ? 'bg-primary/20 border border-primary/50'
-                          : 'bg-secondary/50 hover:bg-secondary/80'
+                          ? 'bg-primary/20 border-primary/50'
+                          : 'bg-secondary/50 hover:bg-secondary/80 border-transparent'
                       }`}
                     >
                       <span className="text-2xl">{r.emoji}</span>
@@ -256,7 +254,6 @@ export default function ChapterReader() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Floating Options Button */}
       <div className="fixed bottom-6 right-6 z-50">
@@ -297,6 +294,26 @@ export default function ChapterReader() {
               >
                 <List className="w-4 h-4 text-muted-foreground" />
                 Chapter List
+              </button>
+              <button
+                onClick={() => {
+                  adjustZoom(10);
+                  setShowOptions(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-secondary/80 transition-colors"
+              >
+                <ZoomIn className="w-4 h-4 text-muted-foreground" />
+                Zoom In
+              </button>
+              <button
+                onClick={() => {
+                  adjustZoom(-10);
+                  setShowOptions(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-secondary/80 transition-colors"
+              >
+                <ZoomOut className="w-4 h-4 text-muted-foreground" />
+                Zoom Out
               </button>
               <button
                 onClick={() => {
