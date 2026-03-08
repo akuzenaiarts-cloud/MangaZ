@@ -114,7 +114,7 @@ export default function MangaInfo() {
                 <p className="text-base font-semibold">Share Kayn Scan</p>
                 <p className="text-sm text-muted-foreground">to your friends</p>
               </div>
-              <Button size="icon" className="rounded-full bg-primary h-11 w-11 shadow-md">
+              <Button size="icon" className="rounded-full bg-teal-500 hover:bg-teal-600 h-11 w-11 shadow-md">
                 <Share2 className="w-5 h-5" />
               </Button>
             </div>
