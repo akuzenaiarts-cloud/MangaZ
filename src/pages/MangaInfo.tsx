@@ -212,26 +212,26 @@ export default function MangaInfo() {
         </div>
 
         {/* Trending Sidebar */}
-        <aside className="w-full lg:w-80 xl:w-96 shrink-0 space-y-2">
+        <aside className="w-full lg:w-80 xl:w-[360px] shrink-0 space-y-1.5">
           {trending.map((m, i) => (
             <Link
               key={m.id}
               to={`/manga/${m.slug}`}
-              className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors group ${
+              className={`flex items-center gap-3 p-3 rounded-xl transition-colors group ${
                 m.slug === slug
                   ? 'bg-primary/10 border border-primary/30'
                   : 'hover:bg-secondary/80 border border-transparent'
               }`}
             >
               <div className="relative shrink-0">
-                <img src={m.cover} alt="" className="w-12 h-16 object-cover rounded-lg" />
-                <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-background border border-border flex items-center justify-center text-xs font-bold text-foreground">
+                <img src={m.cover} alt="" className="w-14 h-[72px] object-cover rounded-lg" />
+                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center text-xs font-bold text-foreground">
                   {i + 1}
                 </span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{m.title}</p>
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{m.genres.slice(0, 3).join(' · ')}</p>
+                <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{m.title}</p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">{m.genres.slice(0, 3).join(', ')}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <TypeBadge type={m.type} />
                   {m.status === 'Completed' && (
