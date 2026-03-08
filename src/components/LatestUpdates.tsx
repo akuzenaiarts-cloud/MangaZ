@@ -68,7 +68,7 @@ function LatestCard({ manga }: { manga: Manga }) {
   return (
     <div className="flex gap-3 pr-3 rounded-lg border border-border/40 bg-card/60 hover:bg-card/80 transition-colors group overflow-hidden">
       <Link to={`/manga/${manga.slug}`} className="shrink-0 self-stretch">
-        <div className="relative w-[120px] h-full overflow-hidden">
+        <div className="relative w-[140px] h-full overflow-hidden">
           <img
             src={manga.cover}
             alt={manga.title}
@@ -101,7 +101,9 @@ function LatestCard({ manga }: { manga: Manga }) {
                 <span className="truncate">Chapter {ch.number}</span>
                 <Crown className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
                 {idx === 0 && (
-                  <span className="shrink-0 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-semibold">NEW</span>
+                  <span className="shrink-0 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                  </span>
                 )}
               </span>
               <span className="text-muted-foreground/50 text-[11px] shrink-0 ml-2">{ch.date}</span>
