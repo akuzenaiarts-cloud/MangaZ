@@ -22,6 +22,7 @@ export interface Manga {
   id: string;
   slug: string;
   title: string;
+  altTitles?: string[];
   cover: string;
   banner?: string;
   description: string;
