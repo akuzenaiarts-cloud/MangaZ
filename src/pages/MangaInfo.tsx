@@ -92,21 +92,21 @@ export default function MangaInfo() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-2.5 mt-2 flex-wrap">
                 <Link to={`/manga/${manga.slug}/chapter/1`}>
-                  <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-12 px-6 text-sm font-semibold text-foreground">
+                  <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-11 px-5 text-sm font-semibold text-foreground">
                     <Play className="w-4 h-4" /> Start Reading
                   </Button>
                 </Link>
                 <Link to={`/manga/${manga.slug}/chapter/${maxChapter}`}>
-                  <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-12 px-6 text-sm font-semibold text-foreground">
+                  <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-11 px-5 text-sm font-semibold text-foreground">
                     <Play className="w-4 h-4" /> New Chapter
                   </Button>
                 </Link>
-                <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-12 px-6 text-sm font-semibold text-foreground">
+                <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-11 px-5 text-sm font-semibold text-foreground">
                   <Plus className="w-4 h-4" /> Add to Library
                 </Button>
-                <Button variant="secondary" className="rounded-lg bg-muted/60 border border-border/40 hover:bg-muted px-4 h-12 text-foreground">
+                <Button variant="secondary" className="rounded-lg bg-muted/60 border border-border/40 hover:bg-muted px-3.5 h-11 text-foreground">
                   <Bell className="w-4 h-4" />
                 </Button>
               </div>
