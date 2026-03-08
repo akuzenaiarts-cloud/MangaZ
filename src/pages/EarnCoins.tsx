@@ -106,7 +106,7 @@ export default function EarnCoins() {
                     ) : r.special ? (
                       <Ticket className="w-5 h-5 text-primary" />
                     ) : (
-                      <Coins className="w-5 h-5 text-yellow-500" />
+                      <Coins className="w-5 h-5 text-coin-gold" />
                     )}
                   </div>
 
