@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Home, List, ZoomIn, ZoomOut, RotateCcw,
-  BookOpen, Share2, Flag, MessageSquare, Settings,
+  BookOpen, Share2, Flag, MessageSquare, Settings, X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getMangaBySlug } from '@/data/mockManga';
 import CommentSection from '@/components/CommentSection';
 import ChapterListModal from '@/components/ChapterListModal';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ChapterReader() {
   const { slug, chapterId } = useParams<{ slug: string; chapterId: string }>();
