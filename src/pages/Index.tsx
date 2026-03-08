@@ -40,14 +40,12 @@ export default function Index() {
                   <TypeBadge type={m.type} variant="uniform" />
                 </div>
               </div>
-              <div className="mt-2">
-                <p className="text-sm font-bold text-foreground truncate">
-                  <span className="text-primary mr-1.5">{i + 1}.</span>
-                  {m.title}
-                </p>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  {m.genres.slice(0, 2).join(' · ')}
-                </p>
+              <div className="bg-secondary/80 rounded-md px-2 py-1.5 mt-2 flex items-center gap-2">
+                <span className="text-2xl font-extrabold text-primary">{i + 1}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground truncate">{m.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{m.genres.slice(0, 2).join(' · ')}</p>
+                </div>
               </div>
             </Link>
           ))}
