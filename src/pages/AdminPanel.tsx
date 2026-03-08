@@ -235,9 +235,9 @@ export default function AdminPanel() {
             {/* Stats grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { label: 'Total Series', value: mockManga.length, icon: <BookOpen className="w-5 h-5" />, color: 'text-primary' },
-                { label: 'Total Chapters', value: totalChapters, icon: <FileText className="w-5 h-5" />, color: 'text-emerald-500' },
+                { label: 'Total Series', value: supabaseManga.length, icon: <BookOpen className="w-5 h-5" />, color: 'text-primary' },
                 { label: 'Total Views', value: formatViews(totalViews), icon: <Eye className="w-5 h-5" />, color: 'text-blue-500' },
+                { label: 'Total Bookmarks', value: formatViews(totalBookmarks), icon: <Bookmark className="w-5 h-5" />, color: 'text-emerald-500' },
                 { label: 'Total Users', value: users.length, icon: <Users className="w-5 h-5" />, color: 'text-amber-500' },
               ].map(stat => (
                 <div key={stat.label} className="bg-card border border-border rounded-2xl p-4">
