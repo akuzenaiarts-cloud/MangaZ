@@ -79,6 +79,7 @@ export const mockManga: Manga[] = [
     id: '2',
     slug: 'arcane-witch',
     title: 'The Arcane Witch',
+    altTitles: ['魔法の魔女伝説', 'The Arcane Sorceress'],
     cover: '/manga/cover2.jpg',
     banner: '/manga/cover2.jpg',
     description: 'A young witch discovers she holds the key to an ancient magic that could reshape the world. Pursued by dark forces and aided by unlikely allies, she must master her powers before it\'s too late.',
