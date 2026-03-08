@@ -1,7 +1,23 @@
 import { Link } from 'react-router-dom';
 import { Crown } from 'lucide-react';
-import { Manga } from '@/data/mockManga';
+import { Manga, Chapter } from '@/data/mockManga';
 import TypeBadge from './TypeBadge';
+
+function isNewChapter(dateStr: string): boolean {
+  const chapterDate = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - chapterDate.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  return diffDays <= 3;
+}
+
+function NewBadge() {
+  return (
+    <span className="shrink-0 w-4 h-4 rounded-full bg-muted-foreground/40 flex items-center justify-center pulse">
+      <span className="w-1.5 h-1.5 rounded-full bg-foreground/60" />
+    </span>
+  );
+}
 
 export default function LatestCard({ manga }: { manga: Manga }) {
   const allChapters = manga.chapters.slice(0, 4);
@@ -42,11 +58,7 @@ export default function LatestCard({ manga }: { manga: Manga }) {
               <span className="flex items-center gap-1.5 text-muted-foreground hover:text-primary truncate">
                 <span className="truncate">Ch. {ch.number}</span>
                 <Crown className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
-                {idx === 0 && (
-                  <span className="shrink-0 w-4 h-4 rounded-full bg-primary flex items-center justify-center pulse">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
-                  </span>
-                )}
+                {idx === 0 && isNewChapter(ch.date) && <NewBadge />}
               </span>
               <span className="text-muted-foreground/50 text-[11px] shrink-0 ml-2">{ch.date}</span>
             </Link>
@@ -66,8 +78,9 @@ export default function LatestCard({ manga }: { manga: Manga }) {
                 idx < freeChapters.length - 1 ? 'border-b border-border/30' : ''
               }`}
             >
-              <span className="text-muted-foreground hover:text-primary truncate">
+              <span className="flex items-center gap-1.5 text-muted-foreground hover:text-primary truncate">
                 Ch. {ch.number}
+                {idx === 0 && isNewChapter(ch.date) && <NewBadge />}
               </span>
               <span className="text-muted-foreground/50 text-[11px] shrink-0 ml-2">{ch.date}</span>
             </Link>
