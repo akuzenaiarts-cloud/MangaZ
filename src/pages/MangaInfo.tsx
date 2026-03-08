@@ -59,7 +59,7 @@ export default function MangaInfo() {
               alt={manga.title}
               className="w-64 h-[360px] object-cover rounded-xl shrink-0 mx-auto sm:mx-0 shadow-lg"
             />
-            <div className="flex-1 space-y-3.5">
+            <div className="flex-1 min-w-0 space-y-3.5">
               <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{manga.title}</h1>
 
               {manga.altTitles && manga.altTitles.length > 0 && (
@@ -69,7 +69,7 @@ export default function MangaInfo() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap overflow-hidden">
                 <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${manga.status === 'Ongoing' ? 'bg-green-600 text-white' : manga.status === 'Completed' ? 'bg-red-600 text-white' : 'bg-yellow-600 text-white'}`}>
                   {manga.status}
                 </span>
@@ -87,7 +87,7 @@ export default function MangaInfo() {
               </div>
 
               {/* Description */}
-              <div className="bg-secondary/60 rounded-lg p-4 text-base leading-relaxed text-foreground border border-border/50">
+              <div className="bg-secondary/60 rounded-lg p-4 text-base leading-relaxed text-foreground border border-border/50 break-words">
                 {manga.description}
               </div>
 
@@ -218,7 +218,7 @@ export default function MangaInfo() {
         </div>
 
         {/* Trending Sidebar */}
-        <aside className="w-full xl:w-[360px] shrink-0 space-y-1.5">
+        <aside className="w-full xl:w-[320px] shrink-0 space-y-1.5">
           {trending.map((m, i) => (
             <Link
               key={m.id}
