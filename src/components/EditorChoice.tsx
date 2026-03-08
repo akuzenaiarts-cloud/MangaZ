@@ -22,8 +22,8 @@ export default function EditorChoice() {
   return (
     <section>
       <div className="flex items-center gap-2 mb-4">
-        <Award className="text-primary h-[40px] w-[40px]" />
-        <h2 className="font-bold text-4xl">Editor's Choice</h2>
+        <Award className="text-primary h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
+        <h2 className="font-bold text-2xl sm:text-3xl md:text-4xl">Editor's Choice</h2>
       </div>
 
       <div className="relative rounded-xl bg-card border border-border/40 overflow-visible">
