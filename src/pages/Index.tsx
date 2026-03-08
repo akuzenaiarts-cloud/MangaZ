@@ -41,7 +41,7 @@ export default function Index() {
                   loading="lazy"
                 />
                 <div className="absolute top-2 left-2">
-                  <TypeBadge type={m.type} variant="uniform" />
+                  <TypeBadge type={m.type} />
                 </div>
               </div>
               <div className="bg-secondary/80 rounded-md px-2 py-1.5 mt-2 flex items-center gap-2">
