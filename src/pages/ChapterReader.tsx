@@ -254,7 +254,6 @@ export default function ChapterReader() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Floating Options Button */}
       <div className="fixed bottom-6 right-6 z-50">
