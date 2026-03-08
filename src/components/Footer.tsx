@@ -51,8 +51,23 @@ export default function Footer() {
         }}
       />
 
+      {/* Large masked text at bottom */}
+      <div className="absolute bottom-0 inset-x-0 z-[1] flex items-end justify-center overflow-hidden pointer-events-none select-none">
+        <span
+          className="text-[clamp(3rem,10vw,8rem)] font-black uppercase tracking-widest leading-none pb-4 whitespace-nowrap"
+          style={{
+            background: 'linear-gradient(to top, hsl(var(--foreground) / 0.06), transparent)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          Kayn Scan
+        </span>
+      </div>
+
       {/* Content */}
-      <div className="relative z-[2] container py-12">
+      <div className="relative z-[2] container py-12 pb-28">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand section */}
           <div className="lg:col-span-1 space-y-4">
