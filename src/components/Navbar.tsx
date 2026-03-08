@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import SearchModal from './SearchModal';
+import logoImg from '@/assets/logo.png';
 
 const NAV_LINKS = [
   { path: '/latest', label: 'Latest', icon: ClipboardList },
