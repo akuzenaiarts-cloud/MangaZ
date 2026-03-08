@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Menu, X, LayoutGrid, LogIn, LogOut, User, ClipboardList, ArrowLeft, BookOpen, Bell, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import SearchModal from './SearchModal';
 
 const NAV_LINKS = [
@@ -13,9 +14,9 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { isAuthenticated, user, logout, setShowLoginModal } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -103,9 +104,9 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               className="rounded-full h-11 w-11 bg-muted/60 hover:bg-muted transition-all duration-200 hover:scale-[1.05]"
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
             >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
 
             {/* Auth */}
@@ -152,9 +153,9 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               className="rounded-full h-11 w-11 bg-muted/60 hover:bg-muted"
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
             >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
             <Button variant="ghost" size="icon" className="rounded-full h-11 w-11 bg-muted/60 hover:bg-muted" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
