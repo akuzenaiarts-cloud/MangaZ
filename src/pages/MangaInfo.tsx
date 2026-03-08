@@ -204,7 +204,7 @@ export default function MangaInfo() {
         </div>
 
         {/* Trending Sidebar */}
-        <aside className="w-full lg:w-80 xl:w-[360px] shrink-0 space-y-1.5">
+        <aside className="w-full xl:w-[360px] shrink-0 space-y-1.5">
           {trending.map((m, i) => (
             <Link
               key={m.id}
