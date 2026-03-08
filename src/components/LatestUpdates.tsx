@@ -80,7 +80,7 @@ function LatestCard({ manga }: { manga: Manga }) {
           </div>
         </div>
       </Link>
-      <div className="flex-1 min-w-0 flex flex-col py-3">
+      <div className="flex-1 min-w-0 flex flex-col py-3 overflow-hidden">
         <Link to={`/manga/${manga.slug}`}>
           <h3 className="font-bold text-base text-foreground line-clamp-2 hover:text-primary transition-colors">
             {manga.title}
@@ -93,21 +93,26 @@ function LatestCard({ manga }: { manga: Manga }) {
             <Link
               key={ch.id}
               to={`/manga/${manga.slug}/chapter/${ch.number}`}
-              className={`flex items-center justify-between text-xs py-1.5 hover:text-primary transition-colors ${
-                idx < premiumChapters.length - 1 || freeChapters.length > 0 ? 'border-b border-border/30' : ''
+              className={`flex items-center justify-between text-xs py-2 hover:text-primary transition-colors ${
+                idx < premiumChapters.length - 1 ? 'border-b border-border/30' : ''
               }`}
             >
-              <span className="flex items-center gap-1.5 text-muted-foreground hover:text-primary">
+              <span className="flex items-center gap-1.5 text-muted-foreground hover:text-primary truncate">
+                <span className="truncate">Chapter {ch.number}</span>
                 <Crown className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
-                Chapter {ch.number}
                 {idx === 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-semibold">NEW</span>
+                  <span className="shrink-0 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-semibold">NEW</span>
                 )}
               </span>
-              <span className="text-muted-foreground/50 text-[11px]">{ch.date}</span>
+              <span className="text-muted-foreground/50 text-[11px] shrink-0 ml-2">{ch.date}</span>
             </Link>
           ))}
         </div>
+
+        {/* Divider between premium and free */}
+        {freeChapters.length > 0 && (
+          <div className="border-t border-muted-foreground/30 my-0.5" />
+        )}
 
         {/* Free chapters */}
         <div>
@@ -115,14 +120,14 @@ function LatestCard({ manga }: { manga: Manga }) {
             <Link
               key={ch.id}
               to={`/manga/${manga.slug}/chapter/${ch.number}`}
-              className={`flex items-center justify-between text-xs py-1.5 hover:text-primary transition-colors ${
+              className={`flex items-center justify-between text-xs py-2 hover:text-primary transition-colors ${
                 idx < freeChapters.length - 1 ? 'border-b border-border/30' : ''
               }`}
             >
-              <span className="text-muted-foreground hover:text-primary">
+              <span className="text-muted-foreground hover:text-primary truncate">
                 Chapter {ch.number}
               </span>
-              <span className="text-muted-foreground/50 text-[11px]">{ch.date}</span>
+              <span className="text-muted-foreground/50 text-[11px] shrink-0 ml-2">{ch.date}</span>
             </Link>
           ))}
         </div>
