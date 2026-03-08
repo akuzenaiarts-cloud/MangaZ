@@ -52,7 +52,7 @@ export default function LatestUpdates() {
           </div>
         </div>
         <Link to="/latest" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground shrink-0">
-          View all <ArrowRight className="w-3.5 h-3.5" />
+          View all &gt;
         </Link>
       </div>
 
