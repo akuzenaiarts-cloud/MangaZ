@@ -26,8 +26,8 @@ export default function EditorChoice() {
         <h2 className="font-bold text-4xl">Editor's Choice</h2>
       </div>
 
-      <div className="relative rounded-xl bg-card border border-border/40">
-        <div className="flex flex-col md:flex-row">
+      <div className="relative rounded-xl bg-card border border-border/40 overflow-visible">
+        <div className="flex flex-col md:flex-row min-h-[350px]">
           {/* Left - Info */}
           <div className="flex-1 p-6 md:p-8 flex flex-col justify-center min-w-0">
             <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">{manga.title}</h3>
@@ -71,8 +71,8 @@ export default function EditorChoice() {
           </div>
 
           {/* Right - Floating Cover */}
-          <div className="hidden md:block relative md:w-[45%] shrink-0 h-[80px]">
-            <div className="absolute -top-[280px] right-0 bottom-0 left-0 rounded-2xl overflow-hidden shadow-2xl border border-border/30">
+          <div className="hidden md:block relative md:w-[45%] shrink-0 self-stretch">
+            <div className="absolute -top-10 right-0 -bottom-4 left-0 rounded-2xl overflow-hidden shadow-2xl border border-border/30">
               <img
                 src={manga.cover}
                 alt={manga.title}
