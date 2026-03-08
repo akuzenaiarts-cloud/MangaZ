@@ -63,44 +63,48 @@ export default function MangaInfo() {
               <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{manga.title}</h1>
 
               <div>
-                <p className="text-base text-muted-foreground font-medium italic">Alternative titles</p>
-                <p className="text-sm text-muted-foreground/70">—</p>
+                <p className="text-sm font-semibold text-muted-foreground">Alternative titles</p>
+                <p className="text-sm text-muted-foreground/70">魔法の魔女伝説 · The Arcane Sorceress</p>
               </div>
 
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className={`px-4 py-1.5 rounded-md text-sm font-bold ${manga.status === 'Ongoing' ? 'bg-green-600 text-white' : manga.status === 'Completed' ? 'bg-red-600 text-white' : 'bg-yellow-600 text-white'}`}>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${manga.status === 'Ongoing' ? 'bg-green-600 text-white' : manga.status === 'Completed' ? 'bg-red-600 text-white' : 'bg-yellow-600 text-white'}`}>
                   {manga.status}
                 </span>
-                <TypeBadge type={manga.type} />
-                <span className="text-sm text-muted-foreground flex items-center gap-1">⏱ {manga.chapters[0]?.date || '4 days ago'}</span>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/40 text-sm text-foreground font-medium">
+                  <TypeBadge type={manga.type} className="border-0 bg-transparent p-0 text-sm lowercase first-letter:uppercase tracking-normal" />
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/40 text-sm text-foreground font-medium">
+                  🕐 {manga.chapters[0]?.date || '4 days ago'}
+                </span>
                 {manga.genres.slice(0, 4).map(g => (
-                  <span key={g} className="text-sm text-muted-foreground flex items-center gap-1">
+                  <span key={g} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/40 text-sm text-foreground font-medium">
                     <span className="text-sm">{GENRE_EMOJI[g] || '📖'}</span> {g}
                   </span>
                 ))}
               </div>
 
               {/* Description */}
-              <div className="bg-secondary/60 rounded-lg p-4 text-sm leading-relaxed text-muted-foreground border border-border/50">
+              <div className="bg-secondary/60 rounded-lg p-4 text-base leading-relaxed text-foreground border border-border/50">
                 {manga.description}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-0 mt-2">
-                <Link to={`/manga/${manga.slug}/chapter/1`} className="flex-1">
-                  <Button variant="secondary" className="w-full gap-2 rounded-none rounded-l-lg border border-border/50 h-12 text-sm font-medium">
+              <div className="flex items-center gap-3 mt-2">
+                <Link to={`/manga/${manga.slug}/chapter/1`}>
+                  <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-12 px-6 text-sm font-semibold text-foreground">
                     <Play className="w-4 h-4" /> Start Reading
                   </Button>
                 </Link>
-                <Link to={`/manga/${manga.slug}/chapter/${maxChapter}`} className="flex-1">
-                  <Button variant="secondary" className="w-full gap-2 rounded-none border-y border-r border-border/50 h-12 text-sm font-medium">
+                <Link to={`/manga/${manga.slug}/chapter/${maxChapter}`}>
+                  <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-12 px-6 text-sm font-semibold text-foreground">
                     <Play className="w-4 h-4" /> New Chapter
                   </Button>
                 </Link>
-                <Button variant="secondary" className="flex-1 gap-2 rounded-none border-y border-r border-border/50 h-12 text-sm font-medium">
+                <Button variant="secondary" className="gap-2 rounded-lg bg-muted/60 border border-border/40 hover:bg-muted h-12 px-6 text-sm font-semibold text-foreground">
                   <Plus className="w-4 h-4" /> Add to Library
                 </Button>
-                <Button variant="secondary" className="rounded-none rounded-r-lg border-y border-r border-border/50 px-4 h-12">
+                <Button variant="secondary" className="rounded-lg bg-muted/60 border border-border/40 hover:bg-muted px-4 h-12 text-foreground">
                   <Bell className="w-4 h-4" />
                 </Button>
               </div>
