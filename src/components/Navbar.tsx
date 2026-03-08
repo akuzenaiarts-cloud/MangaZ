@@ -30,20 +30,22 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="z-50 bg-transparent">
-        <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 flex h-16 items-center justify-between">
+      <nav className="z-50 bg-secondary/80 backdrop-blur-xl border-b border-border/30">
+        <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 flex h-20 items-center justify-between">
           {/* Logo */}
           {isSubPage ? (
-            <button onClick={handleBack} className="flex items-center gap-2">
-              <ArrowLeft className="w-5 h-5 text-foreground" />
-              <span className="font-semibold text-lg text-foreground tracking-tight">Kayn Scan</span>
+            <button onClick={handleBack} className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-muted/80 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5 text-foreground" />
+              </div>
+              <span className="font-bold text-xl text-foreground tracking-tight">Kayn Scan</span>
             </button>
           ) : (
             <Link to="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-muted/80 flex items-center justify-center overflow-hidden">
                 <span className="text-foreground font-bold text-base">K</span>
               </div>
-              <span className="font-semibold text-lg text-foreground tracking-tight">Kayn Scan</span>
+              <span className="font-bold text-xl text-foreground tracking-tight">Kayn Scan</span>
             </Link>
           )}
 
