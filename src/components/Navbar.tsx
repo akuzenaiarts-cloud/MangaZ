@@ -61,7 +61,7 @@ export default function Navbar() {
             {/* Search */}
             <Button
               variant="ghost"
-              className="rounded-full h-11 bg-muted/60 hover:bg-muted text-sm font-medium transition-all duration-200 hover:scale-[1.02] lg:gap-2 lg:px-5 md:px-0 md:w-11"
+              className="rounded-full h-11 bg-muted/60 hover:bg-muted text-sm font-medium transition-all duration-200 hover:scale-[1.02] md:w-11 md:px-0 lg:w-auto lg:gap-2 lg:px-5"
               onClick={() => setSearchOpen(true)}
             >
               <Search className="w-4 h-4" />
