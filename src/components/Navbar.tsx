@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, BookOpen, Clock, Library, LogIn, LogOut, User } from 'lucide-react';
+import { Search, Menu, X, BookOpen, Library, LogIn, LogOut, User, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import SearchModal from './SearchModal';
@@ -11,96 +11,122 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
 
-  const navLinks = [
-    { to: '/latest', label: 'Latest', icon: Clock },
-    { to: '/series', label: 'Series', icon: BookOpen },
-    { to: '/library', label: 'Library', icon: Library },
-  ];
-
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <>
-      <nav className="sticky top-0 z-50 glass border-b border-border/50">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">K</span>
-              </div>
-              <span className="font-bold text-lg text-foreground">Kayn Scan</span>
-            </Link>
-
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map(({ to, label, icon: Icon }) => (
-                <Link key={to} to={to}>
-                  <Button
-                    variant={isActive(to) ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className="gap-2 text-sm"
-                  >
-                    <Icon className="w-4 h-4" />
-                    {label}
-                  </Button>
-                </Link>
-              ))}
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/30">
+        <div className="container flex h-14 items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
+            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+              <span className="text-foreground font-bold text-sm">K</span>
             </div>
-          </div>
+            <span className="font-semibold text-base text-foreground tracking-tight">Kayn Scan</span>
+          </Link>
 
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
-              <Search className="w-5 h-5" />
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full gap-2 px-4 h-9 bg-secondary/80 hover:bg-secondary text-sm font-medium"
+              onClick={() => setSearchOpen(true)}
+            >
+              <Search className="w-4 h-4" />
+              Search
             </Button>
 
+            <Link to="/latest">
+              <Button
+                variant="secondary"
+                size="sm"
+                className={`rounded-full px-3 h-9 bg-secondary/80 hover:bg-secondary ${isActive('/latest') ? 'bg-secondary text-foreground' : ''}`}
+              >
+                <Bookmark className="w-4 h-4" />
+              </Button>
+            </Link>
+
+            <Link to="/series">
+              <Button
+                variant="secondary"
+                size="sm"
+                className={`rounded-full gap-2 px-4 h-9 bg-secondary/80 hover:bg-secondary text-sm font-medium ${isActive('/series') ? 'bg-secondary text-foreground' : ''}`}
+              >
+                <BookOpen className="w-4 h-4" />
+                Series
+              </Button>
+            </Link>
+
+            <Link to="/library">
+              <Button
+                variant="secondary"
+                size="sm"
+                className={`rounded-full gap-2 px-4 h-9 bg-secondary/80 hover:bg-secondary text-sm font-medium ${isActive('/library') ? 'bg-secondary text-foreground' : ''}`}
+              >
+                <Library className="w-4 h-4" />
+                Library
+              </Button>
+            </Link>
+
             {isAuthenticated ? (
-              <div className="hidden md:flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary">
+              <div className="flex items-center gap-2 ml-1">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/80">
                   <User className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">{user?.name}</span>
                 </div>
-                <Button variant="ghost" size="icon" onClick={logout}>
+                <Button variant="secondary" size="sm" className="rounded-full h-9 px-3 bg-secondary/80" onClick={logout}>
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
               <Button
-                variant="default"
+                variant="secondary"
                 size="sm"
-                className="hidden md:flex gap-2"
+                className="rounded-full gap-2 px-4 h-9 bg-secondary/80 hover:bg-secondary text-sm font-medium ml-1"
                 onClick={() => setShowLoginModal(true)}
               >
                 <LogIn className="w-4 h-4" />
-                Sign In
+                Sign in
               </Button>
             )}
-
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
           </div>
+
+          {/* Mobile toggle */}
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
         </div>
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-border/50 bg-card animate-fade-up">
+          <div className="md:hidden border-t border-border/30 bg-background animate-fade-up">
             <div className="container py-4 flex flex-col gap-2">
-              {navLinks.map(({ to, label, icon: Icon }) => (
-                <Link key={to} to={to} onClick={() => setMobileOpen(false)}>
-                  <Button variant={isActive(to) ? 'secondary' : 'ghost'} className="w-full justify-start gap-2">
-                    <Icon className="w-4 h-4" />
-                    {label}
-                  </Button>
-                </Link>
-              ))}
+              <Button variant="secondary" className="w-full justify-start gap-2 rounded-full" onClick={() => { setSearchOpen(true); setMobileOpen(false); }}>
+                <Search className="w-4 h-4" /> Search
+              </Button>
+              <Link to="/latest" onClick={() => setMobileOpen(false)}>
+                <Button variant={isActive('/latest') ? 'default' : 'secondary'} className="w-full justify-start gap-2 rounded-full">
+                  <Bookmark className="w-4 h-4" /> Latest
+                </Button>
+              </Link>
+              <Link to="/series" onClick={() => setMobileOpen(false)}>
+                <Button variant={isActive('/series') ? 'default' : 'secondary'} className="w-full justify-start gap-2 rounded-full">
+                  <BookOpen className="w-4 h-4" /> Series
+                </Button>
+              </Link>
+              <Link to="/library" onClick={() => setMobileOpen(false)}>
+                <Button variant={isActive('/library') ? 'default' : 'secondary'} className="w-full justify-start gap-2 rounded-full">
+                  <Library className="w-4 h-4" /> Library
+                </Button>
+              </Link>
               {isAuthenticated ? (
-                <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => { logout(); setMobileOpen(false); }}>
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
+                <Button variant="secondary" className="w-full justify-start gap-2 rounded-full" onClick={() => { logout(); setMobileOpen(false); }}>
+                  <LogOut className="w-4 h-4" /> Sign Out
                 </Button>
               ) : (
-                <Button variant="default" className="w-full justify-start gap-2" onClick={() => { setShowLoginModal(true); setMobileOpen(false); }}>
-                  <LogIn className="w-4 h-4" />
-                  Sign In
+                <Button variant="secondary" className="w-full justify-start gap-2 rounded-full" onClick={() => { setShowLoginModal(true); setMobileOpen(false); }}>
+                  <LogIn className="w-4 h-4" /> Sign in
                 </Button>
               )}
             </div>
