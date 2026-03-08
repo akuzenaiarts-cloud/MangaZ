@@ -18,7 +18,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/30">
-        <div className="container flex h-14 items-center justify-between">
+        <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 flex h-14 items-center justify-between">
           {/* Logo */}
           {isSubPage ? (
             <button onClick={() => navigate(-1)} className="flex items-center gap-2.5">
