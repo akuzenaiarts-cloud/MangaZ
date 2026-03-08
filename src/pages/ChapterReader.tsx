@@ -233,10 +233,10 @@ export default function ChapterReader() {
                     <button
                       key={r.key}
                       onClick={() => handleReaction(r.key)}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-xl w-full transition-colors ${
+                      className={`flex flex-col items-center gap-1 p-3 rounded-xl w-full transition-colors border ${
                         selectedReaction === r.key
-                          ? 'bg-primary/20 border border-primary/50'
-                          : 'bg-secondary/50 hover:bg-secondary/80'
+                          ? 'bg-primary/20 border-primary/50'
+                          : 'bg-secondary/50 hover:bg-secondary/80 border-transparent'
                       }`}
                     >
                       <span className="text-2xl">{r.emoji}</span>
