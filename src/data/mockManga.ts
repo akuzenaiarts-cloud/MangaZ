@@ -47,6 +47,7 @@ export const mockManga: Manga[] = [
     id: '1',
     slug: 'shadow-monarch',
     title: 'Shadow Monarch',
+    altTitles: ['그림자 군주', 'Shadow Lord'],
     cover: '/manga/cover1.jpg',
     banner: '/manga/cover1.jpg',
     description: 'In a world where hunters fight monsters from dimensional gates, the weakest hunter awakens a mysterious power. As he grows stronger, he discovers the truth behind the gates and the ancient war between light and shadow. His journey from the weakest to the strongest begins now.',
