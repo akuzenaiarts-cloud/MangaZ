@@ -17,6 +17,8 @@ export default function ChapterReader() {
   const chapterNum = parseInt(chapterId || '1');
   const [zoom, setZoom] = useState(100);
   const [showChapterList, setShowChapterList] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const { toast } = useToast();
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
   const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({
     like: 0, funny: 0, love: 0, surprised: 0, angry: 0, sad: 0,
