@@ -15,13 +15,26 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname === path;
   const isSubPage = location.pathname.startsWith('/manga/');
 
+  // Extract slug from path for chapter pages
+  const pathParts = location.pathname.split('/');
+  const isChapterPage = pathParts.length >= 5 && pathParts[3] === 'chapter';
+  const mangaSlug = pathParts[2] || '';
+
+  const handleBack = () => {
+    if (isChapterPage) {
+      navigate(`/manga/${mangaSlug}`);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/30">
         <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 flex h-16 items-center justify-between">
           {/* Logo */}
           {isSubPage ? (
-            <button onClick={() => navigate(-1)} className="flex items-center gap-3">
+            <button onClick={handleBack} className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </div>
