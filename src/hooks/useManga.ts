@@ -251,6 +251,22 @@ export const useCreateChapter = () => {
         .single();
 
       if (error) throw error;
+
+      // Send Discord notification if configured
+      try {
+        await supabase.functions.invoke("discord-notify", {
+          body: {
+            mangaId: chapter.manga_id,
+            chapterNumber: chapter.number,
+            chapterTitle: chapter.title,
+            mangaSlug: mangaSlug,
+          },
+        });
+      } catch (discordError) {
+        console.error("Discord notification failed:", discordError);
+        // Don't throw - chapter was created successfully, notification is optional
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
