@@ -275,6 +275,8 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
                         <SelectItem value="ongoing">Ongoing</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
                         <SelectItem value="hiatus">Hiatus</SelectItem>
+                        <SelectItem value="season end">Season End</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
