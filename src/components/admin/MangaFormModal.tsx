@@ -134,7 +134,7 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
         title: manga.title,
         slug: manga.slug,
         type: manga.type as "manga" | "manhwa" | "manhua",
-        status: manga.status as "ongoing" | "completed" | "hiatus",
+        status: manga.status as "ongoing" | "completed" | "hiatus" | "season end" | "cancelled",
         author: manga.author,
         artist: manga.artist,
         description: manga.description,
@@ -147,6 +147,10 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
         trending: manga.trending || false,
         discord_enabled: !!(manga as any).discord_webhook_url,
         discord_webhook_url: (manga as any).discord_webhook_url || "",
+        discord_channel_name: (manga as any).discord_channel_name || "",
+        discord_primary_role_id: (manga as any).discord_primary_role_id || "",
+        discord_secondary_role_id: (manga as any).discord_secondary_role_id || "",
+        discord_notification_template: (manga as any).discord_notification_template || "New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}",
       });
       setCoverPreview(manga.cover_url);
       setBannerPreview(manga.banner_url || "");
