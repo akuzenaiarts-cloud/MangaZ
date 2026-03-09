@@ -37,7 +37,7 @@ const mangaFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required"),
   type: z.enum(["manga", "manhwa", "manhua"]),
-  status: z.enum(["ongoing", "completed", "hiatus"]),
+  status: z.enum(["ongoing", "completed", "hiatus", "season end", "cancelled"]),
   author: z.string().min(1, "Author is required"),
   artist: z.string().min(1, "Artist is required"),
   description: z.string().min(1, "Description is required"),
