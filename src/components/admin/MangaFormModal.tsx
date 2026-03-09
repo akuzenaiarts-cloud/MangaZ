@@ -67,6 +67,10 @@ const mangaFormSchema = z.object({
   trending: z.boolean(),
   discord_enabled: z.boolean(),
   discord_webhook_url: z.string().optional(),
+  discord_channel_name: z.string().optional(),
+  discord_primary_role_id: z.string().optional(),
+  discord_secondary_role_id: z.string().optional(),
+  discord_notification_template: z.string().optional(),
 });
 
 type MangaFormValues = z.infer<typeof mangaFormSchema>;
@@ -105,6 +109,10 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       trending: false,
       discord_enabled: false,
       discord_webhook_url: "",
+      discord_channel_name: "",
+      discord_primary_role_id: "",
+      discord_secondary_role_id: "",
+      discord_notification_template: "New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}",
     },
   });
 
@@ -126,7 +134,7 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
         title: manga.title,
         slug: manga.slug,
         type: manga.type as "manga" | "manhwa" | "manhua",
-        status: manga.status as "ongoing" | "completed" | "hiatus",
+        status: manga.status as "ongoing" | "completed" | "hiatus" | "season end" | "cancelled",
         author: manga.author,
         artist: manga.artist,
         description: manga.description,
@@ -139,6 +147,10 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
         trending: manga.trending || false,
         discord_enabled: !!(manga as any).discord_webhook_url,
         discord_webhook_url: (manga as any).discord_webhook_url || "",
+        discord_channel_name: (manga as any).discord_channel_name || "",
+        discord_primary_role_id: (manga as any).discord_primary_role_id || "",
+        discord_secondary_role_id: (manga as any).discord_secondary_role_id || "",
+        discord_notification_template: (manga as any).discord_notification_template || "New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}",
       });
       setCoverPreview(manga.cover_url);
       setBannerPreview(manga.banner_url || "");
@@ -185,7 +197,11 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       banner_url: manga?.banner_url,
       content_warnings: values.content_warnings,
       discord_webhook_url: values.discord_enabled ? values.discord_webhook_url : null,
-    };
+      discord_channel_name: values.discord_enabled ? values.discord_channel_name : null,
+      discord_primary_role_id: values.discord_enabled ? values.discord_primary_role_id : null,
+      discord_secondary_role_id: values.discord_enabled ? values.discord_secondary_role_id : null,
+      discord_notification_template: values.discord_enabled ? values.discord_notification_template : null,
+    } as any;
 
     if (manga) {
       await updateManga.mutateAsync({
@@ -575,25 +591,119 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
                 />
 
                 {form.watch("discord_enabled") && (
-                  <FormField
-                    control={form.control}
-                    name="discord_webhook_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Webhook URL</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="https://discord.com/api/webhooks/..."
-                          />
-                        </FormControl>
-                        <p className="text-sm text-muted-foreground">
-                          Get this from Discord Server Settings → Integrations → Webhooks
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="discord_webhook_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Webhook URL</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="https://discord.com/api/webhooks/..."
+                            />
+                          </FormControl>
+                          <p className="text-sm text-muted-foreground">
+                            Get this from Discord Server Settings → Integrations → Webhooks
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="discord_channel_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Channel Name (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="announcements"
+                            />
+                          </FormControl>
+                          <p className="text-sm text-muted-foreground">
+                            Display name of the channel in notification footer
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="discord_primary_role_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Primary Role ID (Optional)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="784110782341185577"
+                              />
+                            </FormControl>
+                            <p className="text-sm text-muted-foreground">
+                              Role to ping for new chapters
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="discord_secondary_role_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Secondary Role ID (Optional)</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="784110780672638996"
+                              />
+                            </FormControl>
+                            <p className="text-sm text-muted-foreground">
+                              Additional role to ping
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="discord_notification_template"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notification Template</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              rows={3}
+                              placeholder="New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}"
+                            />
+                          </FormControl>
+                          <p className="text-sm text-muted-foreground">
+                            Available variables: {"{manga_title}"}, {"{chapter_number}"}, {"{chapter_title}"}, {"{chapter_url}"}
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                      <p className="text-sm font-medium">ℹ️ How it works</p>
+                      <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                        <li>Notifications are sent automatically when you add a new chapter</li>
+                        <li>Role IDs can be found by right-clicking a role in Discord (enable Developer Mode)</li>
+                        <li>Template variables will be replaced with actual manga/chapter data</li>
+                      </ul>
+                    </div>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
