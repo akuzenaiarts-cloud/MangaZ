@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -26,12 +27,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCreateManga, useUpdateManga } from "@/hooks/useManga";
 import { Tables } from "@/integrations/supabase/types";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 type Manga = Tables<"manga">;
+
+const GENRES = [
+  "Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", 
+  "Romance", "Sci-Fi", "Slice of Life", "Supernatural", "Thriller", "Tragedy",
+  "Psychological", "Historical", "Isekai", "Mecha", "Sports", "Martial Arts",
+  "School Life", "Seinen", "Shounen", "Shoujo", "Josei", "Ecchi", "Harem",
+  "Yaoi", "Yuri", "Magic", "Military", "Music", "Parody", "Police",
+  "Post-Apocalyptic", "Reincarnation", "Revenge", "Survival", "Time Travel",
+  "Vampire", "Zombies", "Cyberpunk", "Cooking", "Medical", "Crime", "Detective"
+];
+
+const CONTENT_WARNINGS = [
+  "Gore", "Graphic Violence", "Sexual Content", "Strong Language",
+  "Drug Use", "Suicide/Self Harm", "Disturbing Content", "Animal Cruelty"
+];
 
 const mangaFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -43,11 +60,13 @@ const mangaFormSchema = z.object({
   description: z.string().min(1, "Description is required"),
   rating: z.number().min(0).max(10).optional(),
   released: z.number().min(1900).max(2100),
-  genres: z.string(),
-  premium: z.boolean(),
+  genres: z.array(z.string()).min(1, "Select at least one genre"),
+  content_warnings: z.array(z.string()),
   pinned: z.boolean(),
   featured: z.boolean(),
   trending: z.boolean(),
+  discord_enabled: z.boolean(),
+  discord_webhook_url: z.string().optional(),
 });
 
 type MangaFormValues = z.infer<typeof mangaFormSchema>;
@@ -79,11 +98,13 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       description: "",
       rating: 0,
       released: new Date().getFullYear(),
-      genres: "",
-      premium: false,
+      genres: [],
+      content_warnings: [],
       pinned: false,
       featured: false,
       trending: false,
+      discord_enabled: false,
+      discord_webhook_url: "",
     },
   });
 
@@ -111,11 +132,13 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
         description: manga.description,
         rating: manga.rating || 0,
         released: manga.released,
-        genres: manga.genres?.join(", ") || "",
-        premium: manga.premium || false,
+        genres: manga.genres || [],
+        content_warnings: (manga as any).content_warnings || [],
         pinned: manga.pinned || false,
         featured: manga.featured || false,
         trending: manga.trending || false,
+        discord_enabled: !!(manga as any).discord_webhook_url,
+        discord_webhook_url: (manga as any).discord_webhook_url || "",
       });
       setCoverPreview(manga.cover_url);
       setBannerPreview(manga.banner_url || "");
@@ -153,14 +176,15 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       description: values.description,
       rating: values.rating || 0,
       released: values.released,
-      genres: values.genres.split(",").map((g) => g.trim()).filter(Boolean),
+      genres: values.genres,
       alt_titles: [],
-      premium: values.premium,
       pinned: values.pinned,
       featured: values.featured,
       trending: values.trending,
       cover_url: manga?.cover_url || "",
       banner_url: manga?.banner_url,
+      content_warnings: values.content_warnings,
+      discord_webhook_url: values.discord_enabled ? values.discord_webhook_url : null,
     };
 
     if (manga) {
@@ -192,265 +216,387 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{manga ? "Edit Manga" : "Add New Manga"}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleTitleChange(e.target.value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Basic Information</TabsTrigger>
+                <TabsTrigger value="classification">Classification</TabsTrigger>
+                <TabsTrigger value="discord">Discord Notifications</TabsTrigger>
+              </TabsList>
 
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled={!!manga} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              handleTitleChange(e.target.value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                  <FormField
+                    control={form.control}
+                    name="slug"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Slug</FormLabel>
+                        <FormControl>
+                          <Input {...field} disabled={!!manga} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="manga">Manga</SelectItem>
+                            <SelectItem value="manhwa">Manhwa</SelectItem>
+                            <SelectItem value="manhua">Manhua</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="ongoing">Ongoing</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="hiatus">Hiatus</SelectItem>
+                            <SelectItem value="season end">Season End</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Author</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="artist"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Artist</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <Textarea {...field} rows={4} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="manga">Manga</SelectItem>
-                        <SelectItem value="manhwa">Manhwa</SelectItem>
-                        <SelectItem value="manhua">Manhua</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="rating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rating (0-10)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="released"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Release Year</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>Cover Image</FormLabel>
+                  <Input type="file" accept="image/*" onChange={handleCoverChange} />
+                  {coverPreview && (
+                    <img src={coverPreview} alt="Cover preview" className="w-32 h-48 object-cover rounded" />
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>Banner Image (optional)</FormLabel>
+                  <Input type="file" accept="image/*" onChange={handleBannerChange} />
+                  {bannerPreview && (
+                    <img src={bannerPreview} alt="Banner preview" className="w-full h-32 object-cover rounded" />
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pinned"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                        <FormLabel>Pinned</FormLabel>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                        <FormLabel>Featured</FormLabel>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="trending"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                        <FormLabel>Trending</FormLabel>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="classification" className="space-y-4 mt-4">
+                <FormField
+                  control={form.control}
+                  name="genres"
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Genres</FormLabel>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto p-4 border rounded-lg">
+                        {GENRES.map((genre) => (
+                          <FormField
+                            key={genre}
+                            control={form.control}
+                            name="genres"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={genre}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(genre)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, genre])
+                                          : field.onChange(
+                                              field.value?.filter((value) => value !== genre)
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {genre}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="content_warnings"
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Content Warnings</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Users will see a warning popup when visiting this manga
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 p-4 border rounded-lg">
+                        {CONTENT_WARNINGS.map((warning) => (
+                          <FormField
+                            key={warning}
+                            control={form.control}
+                            name="content_warnings"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={warning}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(warning)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, warning])
+                                          : field.onChange(
+                                              field.value?.filter((value) => value !== warning)
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {warning}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
+
+              <TabsContent value="discord" className="space-y-4 mt-4">
+                <FormField
+                  control={form.control}
+                  name="discord_enabled"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Enable Discord Notifications</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Send notifications to Discord when new chapters are added
+                        </p>
+                      </div>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="ongoing">Ongoing</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="hiatus">Hiatus</SelectItem>
-                        <SelectItem value="season end">Season End</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("discord_enabled") && (
+                  <FormField
+                    control={form.control}
+                    name="discord_webhook_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Webhook URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://discord.com/api/webhooks/..."
+                          />
+                        </FormControl>
+                        <p className="text-sm text-muted-foreground">
+                          Get this from Discord Server Settings → Integrations → Webhooks
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="author"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Author</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="artist"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Artist</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} rows={4} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="rating"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rating (0-10)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="released"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Release Year</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="genres"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Genres (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Action, Adventure, Fantasy" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-2">
-              <FormLabel>Cover Image</FormLabel>
-              <Input type="file" accept="image/*" onChange={handleCoverChange} />
-              {coverPreview && (
-                <img src={coverPreview} alt="Cover preview" className="w-32 h-48 object-cover rounded" />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>Banner Image (optional)</FormLabel>
-              <Input type="file" accept="image/*" onChange={handleBannerChange} />
-              {bannerPreview && (
-                <img src={bannerPreview} alt="Banner preview" className="w-full h-32 object-cover rounded" />
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="premium"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                    <FormLabel>Premium</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="pinned"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                    <FormLabel>Pinned</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="featured"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                    <FormLabel>Featured</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="trending"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                    <FormLabel>Trending</FormLabel>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+              </TabsContent>
+            </Tabs>
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

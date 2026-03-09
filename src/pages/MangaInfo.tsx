@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Play, Plus, Bell, Share2, AlertCircle, ChevronDown, ArrowDownNarrowWide } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { getMangaBySlug, getTrendingManga } from '@/data/mockManga';
 import TypeBadge from '@/components/TypeBadge';
 import TypeFlag from '@/components/TypeFlag';
 import CommentSection from '@/components/CommentSection';
+import { ContentWarningDialog } from '@/components/ContentWarningDialog';
 
 const GENRE_EMOJI: Record<string, string> = {
   Action: '⚔️', Fantasy: '🔮', Adventure: '🧭', Drama: '🎲', Romance: '❤️',
@@ -32,6 +33,15 @@ export default function MangaInfo() {
     Object.fromEntries(REACTIONS.map(r => [r.label, 0]))
   );
   const [sortDesc, setSortDesc] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningAcknowledged, setWarningAcknowledged] = useState(false);
+
+  // Check for content warnings on mount
+  useEffect(() => {
+    if (manga && (manga as any).content_warnings && (manga as any).content_warnings.length > 0 && !warningAcknowledged) {
+      setShowWarning(true);
+    }
+  }, [manga, warningAcknowledged]);
 
   if (!manga) {
     return (
@@ -48,8 +58,23 @@ export default function MangaInfo() {
   const visibleChapters = expanded ? sortedChapters : sortedChapters.slice(0, 9);
   const maxChapter = manga.chapters.length > 0 ? Math.max(...manga.chapters.map(c => c.number)) : 0;
 
+  const handleWarningClose = (open: boolean) => {
+    if (!open) {
+      setWarningAcknowledged(true);
+    }
+    setShowWarning(open);
+  };
+
   return (
     <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-6">
+      {manga && (manga as any).content_warnings && (manga as any).content_warnings.length > 0 && (
+        <ContentWarningDialog
+          open={showWarning}
+          onOpenChange={handleWarningClose}
+          warnings={(manga as any).content_warnings}
+          mangaTitle={manga.title}
+        />
+      )}
       <div className="flex flex-col xl:flex-row gap-6">
         {/* Main Content */}
         <div className="flex-1 min-w-0 space-y-3">
