@@ -67,6 +67,10 @@ const mangaFormSchema = z.object({
   trending: z.boolean(),
   discord_enabled: z.boolean(),
   discord_webhook_url: z.string().optional(),
+  discord_channel_name: z.string().optional(),
+  discord_primary_role_id: z.string().optional(),
+  discord_secondary_role_id: z.string().optional(),
+  discord_notification_template: z.string().optional(),
 });
 
 type MangaFormValues = z.infer<typeof mangaFormSchema>;
