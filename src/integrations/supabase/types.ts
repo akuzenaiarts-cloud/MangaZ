@@ -63,6 +63,10 @@ export type Database = {
           cover_url: string
           created_at: string
           description: string
+          discord_channel_name: string | null
+          discord_notification_template: string | null
+          discord_primary_role_id: string | null
+          discord_secondary_role_id: string | null
           discord_webhook_url: string | null
           featured: boolean | null
           genres: string[] | null
@@ -89,6 +93,10 @@ export type Database = {
           cover_url: string
           created_at?: string
           description: string
+          discord_channel_name?: string | null
+          discord_notification_template?: string | null
+          discord_primary_role_id?: string | null
+          discord_secondary_role_id?: string | null
           discord_webhook_url?: string | null
           featured?: boolean | null
           genres?: string[] | null
@@ -115,6 +123,10 @@ export type Database = {
           cover_url?: string
           created_at?: string
           description?: string
+          discord_channel_name?: string | null
+          discord_notification_template?: string | null
+          discord_primary_role_id?: string | null
+          discord_secondary_role_id?: string | null
           discord_webhook_url?: string | null
           featured?: boolean | null
           genres?: string[] | null
