@@ -14,16 +14,209 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chapters: {
+        Row: {
+          created_at: string
+          id: string
+          manga_id: string
+          number: number
+          pages: string[] | null
+          premium: boolean | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manga_id: string
+          number: number
+          pages?: string[] | null
+          premium?: boolean | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manga_id?: string
+          number?: number
+          pages?: string[] | null
+          premium?: boolean | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapters_manga_id_fkey"
+            columns: ["manga_id"]
+            isOneToOne: false
+            referencedRelation: "manga"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manga: {
+        Row: {
+          alt_titles: string[] | null
+          artist: string
+          author: string
+          banner_url: string | null
+          bookmarks: number | null
+          content_warnings: string[] | null
+          cover_url: string
+          created_at: string
+          description: string
+          discord_channel_name: string | null
+          discord_notification_template: string | null
+          discord_primary_role_id: string | null
+          discord_secondary_role_id: string | null
+          discord_webhook_url: string | null
+          featured: boolean | null
+          genres: string[] | null
+          id: string
+          pinned: boolean | null
+          premium: boolean | null
+          rating: number | null
+          released: number
+          slug: string
+          status: string
+          title: string
+          trending: boolean | null
+          type: string
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          alt_titles?: string[] | null
+          artist?: string
+          author?: string
+          banner_url?: string | null
+          bookmarks?: number | null
+          content_warnings?: string[] | null
+          cover_url?: string
+          created_at?: string
+          description?: string
+          discord_channel_name?: string | null
+          discord_notification_template?: string | null
+          discord_primary_role_id?: string | null
+          discord_secondary_role_id?: string | null
+          discord_webhook_url?: string | null
+          featured?: boolean | null
+          genres?: string[] | null
+          id?: string
+          pinned?: boolean | null
+          premium?: boolean | null
+          rating?: number | null
+          released?: number
+          slug: string
+          status?: string
+          title: string
+          trending?: boolean | null
+          type?: string
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          alt_titles?: string[] | null
+          artist?: string
+          author?: string
+          banner_url?: string | null
+          bookmarks?: number | null
+          content_warnings?: string[] | null
+          cover_url?: string
+          created_at?: string
+          description?: string
+          discord_channel_name?: string | null
+          discord_notification_template?: string | null
+          discord_primary_role_id?: string | null
+          discord_secondary_role_id?: string | null
+          discord_webhook_url?: string | null
+          featured?: boolean | null
+          genres?: string[] | null
+          id?: string
+          pinned?: boolean | null
+          premium?: boolean | null
+          rating?: number | null
+          released?: number
+          slug?: string
+          status?: string
+          title?: string
+          trending?: boolean | null
+          type?: string
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +343,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

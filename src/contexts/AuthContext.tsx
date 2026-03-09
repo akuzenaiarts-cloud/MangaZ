@@ -14,6 +14,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   login: (provider: 'discord' | 'google') => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
   showLoginModal: boolean;
   setShowLoginModal: (show: boolean) => void;
@@ -37,12 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid Supabase deadlock
           setTimeout(() => fetchProfile(session.user.id), 0);
         } else {
           setProfile(null);
@@ -54,7 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Then check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -75,6 +74,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const loginWithEmail = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message || null };
+  };
+
+  const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: displayName || '' },
+      },
+    });
+    return { error: error?.message || null };
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -89,6 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         loading,
         login,
+        loginWithEmail,
+        signUpWithEmail,
         logout,
         showLoginModal,
         setShowLoginModal,

@@ -3,32 +3,28 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Users, Settings, ArrowLeft, Plus, Search,
   Eye, Star, Bookmark, TrendingUp, Edit, Trash2, Shield, ChevronDown,
-  BarChart3, FileText, Bell, Globe, Upload, MoreHorizontal, List
+  BarChart3, FileText, Bell, Globe, Upload, MoreHorizontal, List, Save, RotateCcw, Image
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { formatViews } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminManga, useDeleteManga } from '@/hooks/useManga';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { MangaFormModal } from '@/components/admin/MangaFormModal';
 import { ChapterManager } from '@/components/admin/ChapterManager';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tables } from '@/integrations/supabase/types';
+import { toast } from 'sonner';
 
 type Manga = Tables<"manga">;
-
 type Tab = 'overview' | 'manga' | 'users' | 'settings';
 
 interface UserRow {
@@ -43,7 +39,10 @@ export default function AdminPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { isAdmin, loading } = useIsAdmin();
-  const { toast } = useToast();
+  const { data: supabaseManga = [], isLoading: mangaLoading } = useAdminManga();
+  const deleteManga = useDeleteManga();
+  const { settings, updateSettings } = useSiteSettings();
+
   const [activeTab, setActiveTab] = useState<Tab>((searchParams.get('tab') as Tab) || 'overview');
   const [users, setUsers] = useState<UserRow[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -56,13 +55,34 @@ export default function AdminPanel() {
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [deleteMangaId, setDeleteMangaId] = useState<string | null>(null);
 
-  const { data: supabaseManga = [], isLoading: mangaLoading } = useAdminManga();
-  const deleteManga = useDeleteManga();
+  // Settings form state
+  const [settingsForm, setSettingsForm] = useState({
+    site_name: '',
+    site_description: '',
+    footer_text: '',
+    footer_tagline: '',
+    announcement_message: '',
+    max_size_mb: 10,
+    allowed_formats: 'jpg, png, webp',
+  });
+
+  // Load settings into form
+  useEffect(() => {
+    if (settings) {
+      setSettingsForm({
+        site_name: settings.general.site_name,
+        site_description: settings.general.site_description,
+        footer_text: settings.general.footer_text,
+        footer_tagline: settings.general.footer_tagline,
+        announcement_message: settings.announcements.message,
+        max_size_mb: settings.upload.max_size_mb,
+        allowed_formats: settings.upload.allowed_formats,
+      });
+    }
+  }, [settings]);
 
   useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate('/');
-    }
+    if (!loading && !isAdmin) navigate('/');
   }, [isAdmin, loading, navigate]);
 
   useEffect(() => {
@@ -70,9 +90,7 @@ export default function AdminPanel() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === 'users' || activeTab === 'overview') {
-      fetchUsers();
-    }
+    if (activeTab === 'users' || activeTab === 'overview') fetchUsers();
   }, [activeTab]);
 
   const fetchUsers = async () => {
@@ -110,32 +128,59 @@ export default function AdminPanel() {
   const totalViews = supabaseManga.reduce((acc, m) => acc + (m.views || 0), 0);
   const totalBookmarks = supabaseManga.reduce((acc, m) => acc + (m.bookmarks || 0), 0);
 
-  const handleEditManga = (manga: Manga) => {
-    setEditingManga(manga);
-    setMangaFormOpen(true);
-  };
-
-  const handleManageChapters = (manga: Manga) => {
-    setSelectedManga(manga);
-    setChapterManagerOpen(true);
-  };
+  const handleEditManga = (manga: Manga) => { setEditingManga(manga); setMangaFormOpen(true); };
+  const handleManageChapters = (manga: Manga) => { setSelectedManga(manga); setChapterManagerOpen(true); };
 
   const handleDeleteManga = async () => {
     if (!deleteMangaId) return;
     const manga = supabaseManga.find(m => m.id === deleteMangaId);
     if (!manga) return;
-
-    await deleteManga.mutateAsync({
-      id: deleteMangaId,
-      coverUrl: manga.cover_url,
-      bannerUrl: manga.banner_url || undefined,
-    });
+    await deleteManga.mutateAsync({ id: deleteMangaId, coverUrl: manga.cover_url, bannerUrl: manga.banner_url || undefined });
     setDeleteMangaId(null);
   };
 
-  const handleMangaFormClose = () => {
-    setMangaFormOpen(false);
-    setEditingManga(null);
+  const handleMangaFormClose = () => { setMangaFormOpen(false); setEditingManga(null); };
+
+  const handleSaveSettings = async () => {
+    try {
+      await Promise.all([
+        updateSettings.mutateAsync({
+          key: 'general',
+          value: {
+            site_name: settingsForm.site_name,
+            site_description: settingsForm.site_description,
+            footer_text: settingsForm.footer_text,
+            footer_tagline: settingsForm.footer_tagline,
+            logo_url: settings.general.logo_url,
+          },
+        }),
+        updateSettings.mutateAsync({
+          key: 'announcements',
+          value: { message: settingsForm.announcement_message },
+        }),
+        updateSettings.mutateAsync({
+          key: 'upload',
+          value: { max_size_mb: settingsForm.max_size_mb, allowed_formats: settingsForm.allowed_formats },
+        }),
+      ]);
+      toast.success('Settings saved successfully');
+    } catch {
+      toast.error('Failed to save settings');
+    }
+  };
+
+  const handleResetSettings = () => {
+    if (settings) {
+      setSettingsForm({
+        site_name: settings.general.site_name,
+        site_description: settings.general.site_description,
+        footer_text: settings.general.footer_text,
+        footer_tagline: settings.general.footer_tagline,
+        announcement_message: settings.announcements.message,
+        max_size_mb: settings.upload.max_size_mb,
+        allowed_formats: settings.upload.allowed_formats,
+      });
+    }
   };
 
   return (
@@ -149,34 +194,20 @@ export default function AdminPanel() {
             </div>
             <div>
               <h2 className="font-bold text-sm">Admin Panel</h2>
-              <p className="text-xs text-muted-foreground">Kayn Scan</p>
+              <p className="text-xs text-muted-foreground">{settings.general.site_name}</p>
             </div>
           </div>
         </div>
-
         <nav className="flex-1 p-3 space-y-1">
           {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
+              {tab.icon} {tab.label}
             </button>
           ))}
         </nav>
-
         <div className="p-3 border-t border-border">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground"
-            onClick={() => navigate('/')}
-          >
+          <Button variant="ghost" className="w-full justify-start gap-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground" onClick={() => navigate('/')}>
             <ArrowLeft className="w-4 h-4" /> Back to Site
           </Button>
         </div>
@@ -194,12 +225,7 @@ export default function AdminPanel() {
               <span className="font-bold text-sm">Admin Panel</span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-xs"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
+          <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {tabs.find(t => t.id === activeTab)?.label}
             <ChevronDown className={`w-3 h-3 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`} />
           </Button>
@@ -207,15 +233,8 @@ export default function AdminPanel() {
         {mobileMenuOpen && (
           <div className="px-4 pb-3 flex gap-2 flex-wrap">
             {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-primary/10 text-primary'
-                    : 'bg-muted/50 text-muted-foreground'
-                }`}
-              >
+              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-muted/50 text-muted-foreground'}`}>
                 {tab.icon} {tab.label}
               </button>
             ))}
@@ -231,8 +250,6 @@ export default function AdminPanel() {
               <h1 className="text-2xl font-bold">Dashboard</h1>
               <p className="text-muted-foreground text-sm mt-1">Overview of your platform stats.</p>
             </div>
-
-            {/* Stats grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
                 { label: 'Total Series', value: supabaseManga.length, icon: <BookOpen className="w-5 h-5" />, color: 'text-primary' },
@@ -247,8 +264,6 @@ export default function AdminPanel() {
                 </div>
               ))}
             </div>
-
-            {/* Quick actions */}
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-semibold mb-3">Quick Actions</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -263,8 +278,6 @@ export default function AdminPanel() {
                 </Button>
               </div>
             </div>
-
-            {/* Recent series */}
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-semibold mb-3">Recent Series</h3>
               <div className="space-y-2">
@@ -275,11 +288,7 @@ export default function AdminPanel() {
                       <p className="text-sm font-medium truncate">{m.title}</p>
                       <p className="text-xs text-muted-foreground capitalize">{m.type}</p>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      m.status === 'ongoing' ? 'bg-emerald-500/10 text-emerald-500' :
-                      m.status === 'completed' ? 'bg-blue-500/10 text-blue-500' :
-                      'bg-amber-500/10 text-amber-500'
-                    }`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${m.status === 'ongoing' ? 'bg-emerald-500/10 text-emerald-500' : m.status === 'completed' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
                       {m.status}
                     </span>
                   </div>
@@ -300,99 +309,75 @@ export default function AdminPanel() {
                 <Plus className="w-4 h-4" /> Add Series
               </Button>
             </div>
-
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search series..."
-                value={mangaSearch}
-                onChange={e => setMangaSearch(e.target.value)}
-                className="pl-9 rounded-xl bg-card border-border"
-              />
+              <Input placeholder="Search series..." value={mangaSearch} onChange={e => setMangaSearch(e.target.value)} className="pl-9 rounded-xl bg-card border-border" />
             </div>
 
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-              {mangaLoading ? (
-                <div className="text-center py-12 text-muted-foreground text-sm">Loading manga...</div>
-              ) : (
-                <>
-                  {/* Table header */}
-                  <div className="hidden md:grid grid-cols-[1fr_100px_100px_100px_100px_120px] gap-3 px-5 py-3 bg-muted/30 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    <span>Series</span>
-                    <span>Type</span>
-                    <span>Status</span>
-                    <span>Views</span>
-                    <span>Flags</span>
-                    <span>Actions</span>
-                  </div>
-
-                  {/* Rows */}
-                  <div className="divide-y divide-border">
-                    {filteredManga.map(m => (
-                      <div key={m.id} className="flex flex-col md:grid md:grid-cols-[1fr_100px_100px_100px_100px_120px] gap-2 md:gap-3 px-5 py-3 hover:bg-muted/30 transition-colors items-start md:items-center">
-                        <div className="flex items-center gap-3">
-                          <img src={m.cover_url} alt={m.title} className="w-10 h-14 rounded-lg object-cover shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{m.title}</p>
-                            <p className="text-xs text-muted-foreground">{m.author}</p>
-                          </div>
+            {/* Card Grid Layout */}
+            {mangaLoading ? (
+              <div className="text-center py-12 text-muted-foreground text-sm">Loading manga...</div>
+            ) : filteredManga.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground text-sm">
+                {mangaSearch ? 'No series found.' : 'No series yet. Add your first series!'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredManga.map(m => (
+                  <div key={m.id} className="bg-card border border-border rounded-2xl overflow-hidden group hover:border-primary/30 transition-colors">
+                    {/* Cover */}
+                    <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                      {m.cover_url ? (
+                        <img src={m.cover_url} alt={m.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Image className="w-8 h-8 text-muted-foreground" />
                         </div>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit capitalize ${
-                          m.type === 'manhwa' ? 'bg-blue-500/10 text-blue-500' :
-                          m.type === 'manga' ? 'bg-red-500/10 text-red-500' :
-                          'bg-emerald-500/10 text-emerald-500'
-                        }`}>{m.type}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full w-fit capitalize ${
-                          m.status === 'ongoing' ? 'bg-emerald-500/10 text-emerald-500' :
-                          m.status === 'completed' ? 'bg-blue-500/10 text-blue-500' :
-                          'bg-amber-500/10 text-amber-500'
-                        }`}>{m.status}</span>
-                        <span className="text-sm">{formatViews(m.views || 0)}</span>
-                        <div className="flex gap-1 flex-wrap">
-                          {m.premium && <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500">P</span>}
-                          {m.pinned && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">📌</span>}
-                          {m.featured && <span className="text-xs px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-500">⭐</span>}
-                          {m.trending && <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/10 text-red-500">🔥</span>}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-lg hover:bg-muted"
-                            onClick={() => handleManageChapters(m)}
-                            title="Manage Chapters"
-                          >
-                            <List className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-lg hover:bg-muted"
-                            onClick={() => handleEditManga(m)}
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-lg hover:bg-destructive/10 text-destructive"
-                            onClick={() => setDeleteMangaId(m.id)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
+                      )}
+                      {/* Badges overlay */}
+                      <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md capitalize ${m.type === 'manhwa' ? 'bg-blue-500/90 text-white' : m.type === 'manga' ? 'bg-red-500/90 text-white' : 'bg-emerald-500/90 text-white'}`}>
+                          {m.type}
+                        </span>
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md capitalize ${m.status === 'ongoing' ? 'bg-emerald-500/90 text-white' : m.status === 'completed' ? 'bg-blue-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
+                          {m.status}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-
-                  {filteredManga.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground text-sm">
-                      {mangaSearch ? 'No series found.' : 'No series yet. Add your first series!'}
+                      {/* Flags */}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {m.pinned && <span className="text-xs bg-background/80 rounded px-1">📌</span>}
+                        {m.featured && <span className="text-xs bg-background/80 rounded px-1">⭐</span>}
+                        {m.trending && <span className="text-xs bg-background/80 rounded px-1">🔥</span>}
+                        {m.premium && <span className="text-xs bg-amber-500/80 text-white rounded px-1">P</span>}
+                      </div>
                     </div>
-                  )}
-                </>
-              )}
-            </div>
+                    {/* Info */}
+                    <div className="p-3 space-y-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate" title={m.title}>{m.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{m.author || 'Unknown author'}</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{formatViews(m.views || 0)}</span>
+                        <span className="flex items-center gap-1"><Bookmark className="w-3 h-3" />{formatViews(m.bookmarks || 0)}</span>
+                      </div>
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 pt-1 border-t border-border/50">
+                        <Button variant="ghost" size="sm" className="h-8 rounded-lg hover:bg-muted text-xs gap-1 flex-1" onClick={() => handleManageChapters(m)}>
+                          <List className="w-3.5 h-3.5" /> Chapters
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted" onClick={() => handleEditManga(m)}>
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-destructive/10 text-destructive" onClick={() => setDeleteMangaId(m.id)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -402,25 +387,14 @@ export default function AdminPanel() {
               <h1 className="text-2xl font-bold">User Management</h1>
               <p className="text-muted-foreground text-sm mt-1">{users.length} registered users</p>
             </div>
-
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search users..."
-                value={userSearch}
-                onChange={e => setUserSearch(e.target.value)}
-                className="pl-9 rounded-xl bg-card border-border"
-              />
+              <Input placeholder="Search users..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="pl-9 rounded-xl bg-card border-border" />
             </div>
-
             <div className="bg-card border border-border rounded-2xl overflow-hidden">
               <div className="hidden md:grid grid-cols-[1fr_200px_120px_80px] gap-3 px-5 py-3 bg-muted/30 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                <span>User</span>
-                <span>Joined</span>
-                <span>Role</span>
-                <span>Actions</span>
+                <span>User</span><span>Joined</span><span>Role</span><span>Actions</span>
               </div>
-
               <div className="divide-y divide-border">
                 {usersLoading ? (
                   <div className="text-center py-12 text-muted-foreground text-sm">Loading users...</div>
@@ -428,20 +402,14 @@ export default function AdminPanel() {
                   <div key={u.id} className="flex flex-col md:grid md:grid-cols-[1fr_200px_120px_80px] gap-2 md:gap-3 px-5 py-3 hover:bg-muted/30 transition-colors items-start md:items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0">
-                        {u.avatar_url ? (
-                          <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <Users className="w-4 h-4 text-primary" />
-                        )}
+                        {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> : <Users className="w-4 h-4 text-primary" />}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{u.display_name || 'Unknown'}</p>
                         <p className="text-xs text-muted-foreground truncate">{u.id.slice(0, 8)}...</p>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground w-fit">User</span>
                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted">
                       <MoreHorizontal className="w-4 h-4" />
@@ -449,7 +417,6 @@ export default function AdminPanel() {
                   </div>
                 ))}
               </div>
-
               {!usersLoading && filteredUsers.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">No users found.</div>
               )}
@@ -464,27 +431,59 @@ export default function AdminPanel() {
               <p className="text-muted-foreground text-sm mt-1">Configure your platform.</p>
             </div>
 
-            {/* General */}
+            {/* General — shows current values */}
             <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-              <h3 className="font-semibold flex items-center gap-2"><Globe className="w-4 h-4" /> General</h3>
+              <h3 className="font-semibold flex items-center gap-2"><Globe className="w-4 h-4" /> Basic Site Details</h3>
+              <div className="flex items-center gap-4 p-3 bg-muted/30 rounded-xl">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                  {settings.general.logo_url ? (
+                    <img src={settings.general.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <Image className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold truncate">{settings.general.site_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{settings.general.site_description}</p>
+                </div>
+              </div>
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Site Name</label>
-                  <Input defaultValue="Kayn Scan" className="rounded-xl bg-background" />
+                  <Input value={settingsForm.site_name} onChange={e => setSettingsForm(s => ({ ...s, site_name: e.target.value }))} className="rounded-xl bg-background" />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Site Description</label>
-                  <Input defaultValue="Read the latest manga, manhwa, and manhua translations." className="rounded-xl bg-background" />
+                  <Input value={settingsForm.site_description} onChange={e => setSettingsForm(s => ({ ...s, site_description: e.target.value }))} className="rounded-xl bg-background" />
                 </div>
               </div>
             </div>
 
-            {/* Notifications */}
+            {/* Footer */}
+            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+              <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> Footer</h3>
+              <div className="p-3 bg-muted/30 rounded-xl">
+                <p className="text-sm font-medium">{settings.general.footer_text || 'Not set'}</p>
+                <p className="text-xs text-muted-foreground">{settings.general.footer_tagline || 'No tagline'}</p>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Footer Text</label>
+                  <Input value={settingsForm.footer_text} onChange={e => setSettingsForm(s => ({ ...s, footer_text: e.target.value }))} className="rounded-xl bg-background" placeholder="e.g. Kayn Scan" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Footer Tagline</label>
+                  <Input value={settingsForm.footer_tagline} onChange={e => setSettingsForm(s => ({ ...s, footer_tagline: e.target.value }))} className="rounded-xl bg-background" placeholder="e.g. Your gateway to manga" />
+                </div>
+              </div>
+            </div>
+
+            {/* Announcements */}
             <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
               <h3 className="font-semibold flex items-center gap-2"><Bell className="w-4 h-4" /> Announcements</h3>
               <div>
                 <label className="text-sm font-medium mb-1 block">Announcement Bar Message</label>
-                <Input defaultValue="" placeholder="Leave empty to hide the announcement bar" className="rounded-xl bg-background" />
+                <Input value={settingsForm.announcement_message} onChange={e => setSettingsForm(s => ({ ...s, announcement_message: e.target.value }))} placeholder="Leave empty to hide the announcement bar" className="rounded-xl bg-background" />
               </div>
             </div>
 
@@ -494,50 +493,41 @@ export default function AdminPanel() {
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Max Upload Size (MB)</label>
-                  <Input type="number" defaultValue="10" className="rounded-xl bg-background w-32" />
+                  <Input type="number" value={settingsForm.max_size_mb} onChange={e => setSettingsForm(s => ({ ...s, max_size_mb: parseInt(e.target.value) || 10 }))} className="rounded-xl bg-background w-32" />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Allowed Image Formats</label>
-                  <Input defaultValue="jpg, png, webp" className="rounded-xl bg-background" />
+                  <Input value={settingsForm.allowed_formats} onChange={e => setSettingsForm(s => ({ ...s, allowed_formats: e.target.value }))} className="rounded-xl bg-background" />
                 </div>
               </div>
             </div>
 
             <div className="flex gap-2">
-              <Button className="rounded-xl">Save Settings</Button>
-              <Button variant="outline" className="rounded-xl">Reset</Button>
+              <Button className="rounded-xl gap-2" onClick={handleSaveSettings} disabled={updateSettings.isPending}>
+                <Save className="w-4 h-4" /> {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
+              </Button>
+              <Button variant="outline" className="rounded-xl gap-2" onClick={handleResetSettings}>
+                <RotateCcw className="w-4 h-4" /> Reset
+              </Button>
             </div>
           </div>
         )}
       </main>
 
-      <MangaFormModal
-        open={mangaFormOpen}
-        onOpenChange={handleMangaFormClose}
-        manga={editingManga || undefined}
-      />
-
-      <ChapterManager
-        open={chapterManagerOpen}
-        onOpenChange={setChapterManagerOpen}
-        manga={selectedManga}
-      />
+      <MangaFormModal open={mangaFormOpen} onOpenChange={handleMangaFormClose} manga={editingManga || undefined} />
+      <ChapterManager open={chapterManagerOpen} onOpenChange={setChapterManagerOpen} manga={selectedManga} />
 
       <AlertDialog open={!!deleteMangaId} onOpenChange={() => setDeleteMangaId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Manga</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this manga? This will permanently delete
-              the series, all its chapters, and all associated images. This action cannot be undone.
+              Are you sure you want to delete this manga? This will permanently delete the series, all its chapters, and all associated images. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteManga}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleDeleteManga} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

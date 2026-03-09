@@ -53,6 +53,7 @@ const CONTENT_WARNINGS = [
 const mangaFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required"),
+  alt_titles: z.string().optional(),
   type: z.enum(["manga", "manhwa", "manhua"]),
   status: z.enum(["ongoing", "completed", "hiatus", "season end", "cancelled"]),
   author: z.string().min(1, "Author is required"),
@@ -99,6 +100,7 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       status: "ongoing",
       author: "",
       artist: "",
+      alt_titles: "",
       description: "",
       rating: 0,
       released: new Date().getFullYear(),
@@ -133,6 +135,7 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       form.reset({
         title: manga.title,
         slug: manga.slug,
+        alt_titles: (manga.alt_titles || []).join('\n'),
         type: manga.type as "manga" | "manhwa" | "manhua",
         status: manga.status as "ongoing" | "completed" | "hiatus" | "season end" | "cancelled",
         author: manga.author,
@@ -189,7 +192,7 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
       rating: values.rating || 0,
       released: values.released,
       genres: values.genres,
-      alt_titles: [],
+      alt_titles: (values.alt_titles || '').split('\n').map(t => t.trim()).filter(Boolean),
       pinned: values.pinned,
       featured: values.featured,
       trending: values.trending,
@@ -282,6 +285,21 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="alt_titles"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alternative Titles (one per line)</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} rows={3} placeholder={"e.g.\n나 혼자만 레벨업\nSolo Leveling"} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
 
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
