@@ -22,8 +22,7 @@ export const useAllManga = () => {
       return (data as MangaWithChapters[]).map(m => ({
         ...m,
         chapters: (m.chapters || [])
-          .sort((a, b) => b.number - a.number)
-          .slice(0, 8),
+          .sort((a, b) => b.number - a.number),
       }));
     },
   });
