@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Play, Plus, Bell, Share2, AlertCircle, ChevronDown, ArrowDownNarrowWide } from 'lucide-react';
+import { Play, Plus, Bell, BellOff, Share2, AlertCircle, ChevronDown, ArrowDownNarrowWide } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMangaBySlug, useMangaChapters } from '@/hooks/useMangaBySlug';
 import { useAllManga } from '@/hooks/useAllManga';
+import { useMangaSubscription } from '@/hooks/useNotifications';
+import { useAuth } from '@/contexts/AuthContext';
 import TypeBadge from '@/components/TypeBadge';
 import TypeFlag from '@/components/TypeFlag';
 import CommentSection from '@/components/CommentSection';
 import { ContentWarningDialog } from '@/components/ContentWarningDialog';
+import { toast } from 'sonner';
 
 const GENRE_EMOJI: Record<string, string> = {
   Action: '⚔️', Fantasy: '🔮', Adventure: '🧭', Drama: '🎲', Romance: '❤️',
