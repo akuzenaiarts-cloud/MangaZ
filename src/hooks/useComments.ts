@@ -30,9 +30,22 @@ export const useComments = (mangaId: string | undefined) => {
       // Fetch all comments for this manga
       const { data, error } = await supabase
         .from('comments')
-        .select('*, profile:user_id(display_name, avatar_url)')
+        .select('*')
         .eq('manga_id', mangaId)
         .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch profiles for comment users
+      const userIds = [...new Set((data || []).map(c => c.user_id))];
+      let profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', userIds);
+        (profiles || []).forEach(p => { profilesMap[p.id] = p; });
+      }
 
       if (error) throw error;
 
