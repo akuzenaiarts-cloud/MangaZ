@@ -72,9 +72,7 @@ export default function ChapterReader() {
     setZoom(prev => Math.max(50, Math.min(200, prev + delta)));
   };
 
-  // Use actual chapter pages if available, otherwise show placeholder
-  const pageUrls = currentChapter?.pages || [];
-  const pages = pageUrls.length > 0 ? pageUrls : Array.from({ length: 8 }, (_, i) => null);
+  const pageUrls = currentChapter?.pages?.filter(Boolean) || [];
 
   const chapterListItems = chapters.map(ch => ({
     id: ch.id,
@@ -123,6 +121,19 @@ export default function ChapterReader() {
     toast({ title: 'Report submitted', description: 'Thanks for letting us know. We\'ll look into it.' });
     setShowOptions(false);
   };
+
+  // No chapter found or no pages available
+  if (!currentChapter) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold">Chapter Not Available</h1>
+          <p className="text-muted-foreground">This chapter doesn't exist or hasn't been uploaded yet.</p>
+          <Button asChild><Link to={`/manga/${manga.slug}`}>Back to Manga</Link></Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -173,28 +184,26 @@ export default function ChapterReader() {
         <div className="w-full px-2 sm:px-4 py-4 sm:py-8">
           {/* Pages */}
           <div className="space-y-2 sm:space-y-4 mb-6 sm:mb-8">
-            {pages.map((page, i) => (
-              <div key={i} className="flex justify-center">
-                {typeof page === 'string' ? (
+            {pageUrls.length > 0 ? (
+              pageUrls.map((page, i) => (
+                <div key={i} className="flex justify-center">
                   <img
                     src={page}
                     alt={`Page ${i + 1}`}
                     className="rounded-lg shadow-lg"
                     style={{ width: `${Math.min(zoom, 100)}%`, maxWidth: '100%' }}
                   />
-                ) : (
-                  <div
-                    className="bg-secondary flex items-center justify-center rounded-lg shadow-lg"
-                    style={{ width: `${Math.min(zoom, 100)}%`, aspectRatio: '2/3', maxWidth: '100%' }}
-                  >
-                    <div className="text-center text-muted-foreground">
-                      <p className="text-lg font-medium">Page {i + 1}</p>
-                      <p className="text-xs">Chapter {chapterNum}</p>
-                    </div>
-                  </div>
-                )}
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center space-y-3">
+                  <BookOpen className="w-12 h-12 mx-auto text-muted-foreground/40" />
+                  <p className="text-lg font-medium text-muted-foreground">No pages available</p>
+                  <p className="text-sm text-muted-foreground/60">This chapter hasn't been uploaded yet.</p>
+                </div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Chapter Navigation Bar */}

@@ -36,14 +36,7 @@ interface UserRow {
   created_at: string;
 }
 
-const THEME_PRESETS = [
-  { name: 'Purple Night', primary: '258 89% 66%', primaryDark: '255 91% 76%', accent: '269 100% 98%' },
-  { name: 'Ocean Blue', primary: '210 100% 50%', primaryDark: '210 100% 65%', accent: '210 100% 95%' },
-  { name: 'Forest Green', primary: '142 71% 45%', primaryDark: '142 71% 55%', accent: '142 71% 95%' },
-  { name: 'Crimson', primary: '0 84% 55%', primaryDark: '0 84% 65%', accent: '0 100% 96%' },
-  { name: 'Amber Gold', primary: '38 92% 50%', primaryDark: '38 92% 60%', accent: '38 92% 95%' },
-  { name: 'Teal', primary: '175 80% 40%', primaryDark: '175 80% 55%', accent: '175 80% 95%' },
-];
+import { THEME_PRESETS as ALL_THEME_PRESETS } from '@/lib/themes';
 
 // Helper to upload file to storage
 const uploadToStorage = async (file: File, path: string): Promise<string> => {
@@ -209,8 +202,6 @@ export default function AdminPanel() {
 
   const handleSaveSettings = async () => {
     try {
-      const selectedPreset = THEME_PRESETS.find(t => t.name === settingsForm.theme_preset);
-      
       await Promise.all([
         updateSettings.mutateAsync({
           key: 'general',
@@ -248,18 +239,11 @@ export default function AdminPanel() {
           key: 'theme',
           value: {
             preset: settingsForm.theme_preset,
-            custom_primary_hsl: settingsForm.custom_primary_hsl,
-            primary: settingsForm.custom_primary_hsl || selectedPreset?.primary || '258 89% 66%',
-            primaryDark: selectedPreset?.primaryDark || '255 91% 76%',
           },
         }),
       ]);
 
-      // Apply theme immediately
-      const primaryHsl = settingsForm.custom_primary_hsl || selectedPreset?.primary || '258 89% 66%';
-      const primaryDarkHsl = selectedPreset?.primaryDark || '255 91% 76%';
-      document.documentElement.style.setProperty('--primary', primaryHsl);
-      document.documentElement.style.setProperty('--ring', primaryHsl);
+      // Theme will be applied automatically by ThemeContext on settings change
 
       toast.success('Settings saved successfully');
     } catch {
@@ -629,43 +613,28 @@ export default function AdminPanel() {
             {/* Theme */}
             {settingsSubTab === 'theme' && (
               <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-                <h3 className="font-semibold flex items-center gap-2"><Palette className="w-4 h-4" /> Smart Theme</h3>
-                <p className="text-sm text-muted-foreground">Choose a preset color theme or customize your own.</p>
+                <h3 className="font-semibold flex items-center gap-2"><Palette className="w-4 h-4" /> Theme Presets</h3>
+                <p className="text-sm text-muted-foreground">Choose a full theme preset. Each theme controls all colors for both light and dark modes.</p>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {THEME_PRESETS.map(preset => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {ALL_THEME_PRESETS.map(preset => (
                     <button
                       key={preset.name}
                       onClick={() => setSettingsForm(s => ({ ...s, theme_preset: preset.name, custom_primary_hsl: '' }))}
                       className={`p-3 rounded-xl border-2 transition-all text-left ${
-                        settingsForm.theme_preset === preset.name && !settingsForm.custom_primary_hsl
+                        settingsForm.theme_preset === preset.name
                           ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-primary/30'
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-6 h-6 rounded-full" style={{ background: `hsl(${preset.primary})` }} />
-                        <div className="w-4 h-4 rounded-full" style={{ background: `hsl(${preset.primaryDark})` }} />
+                      <div className="flex items-center gap-1.5 mb-2">
+                        {preset.colors.map((color, i) => (
+                          <div key={i} className="w-5 h-5 rounded-full border border-border/30" style={{ background: color }} />
+                        ))}
                       </div>
                       <p className="text-xs font-semibold">{preset.name}</p>
                     </button>
                   ))}
-                </div>
-
-                <div className="pt-2 border-t border-border">
-                  <label className="text-sm font-medium mb-1 block">Custom Primary Color (HSL)</label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      value={settingsForm.custom_primary_hsl}
-                      onChange={e => setSettingsForm(s => ({ ...s, custom_primary_hsl: e.target.value }))}
-                      className="rounded-xl bg-background"
-                      placeholder="e.g. 258 89% 66%"
-                    />
-                    {settingsForm.custom_primary_hsl && (
-                      <div className="w-8 h-8 rounded-lg shrink-0" style={{ background: `hsl(${settingsForm.custom_primary_hsl})` }} />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Leave empty to use the selected preset.</p>
                 </div>
               </div>
             )}

@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { applyTheme, getThemeByName } from '@/lib/themes';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 type Theme = 'light' | 'dark';
 
@@ -15,11 +17,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return (stored === 'light' || stored === 'dark') ? stored : 'dark';
   });
 
+  const { settings } = useSiteSettings();
+
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Apply theme preset when settings or theme mode changes
+  useEffect(() => {
+    const presetName = (settings as any)?.theme?.preset || 'Default';
+    const preset = getThemeByName(presetName);
+    if (preset) {
+      applyTheme(preset, theme === 'dark');
+    }
+  }, [settings, theme]);
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
