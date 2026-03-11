@@ -66,14 +66,14 @@ export default function LatestUpdates() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="h-48 bg-secondary rounded-lg animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-          {filtered.slice(0, 12).map(manga => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          {filtered.slice(0, 16).map(manga => (
             <LatestCard key={manga.id} manga={manga} />
           ))}
         </div>
