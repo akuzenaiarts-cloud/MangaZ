@@ -220,6 +220,8 @@ export default function AdminPanel() {
             footer_text: settingsForm.footer_text,
             footer_tagline: settingsForm.footer_tagline,
             logo_url: settingsForm.logo_url,
+            discord_url: settingsForm.discord_url,
+            patreon_url: settingsForm.patreon_url,
           },
         }),
         updateSettings.mutateAsync({
