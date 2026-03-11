@@ -241,18 +241,11 @@ export default function AdminPanel() {
           key: 'theme',
           value: {
             preset: settingsForm.theme_preset,
-            custom_primary_hsl: settingsForm.custom_primary_hsl,
-            primary: settingsForm.custom_primary_hsl || selectedPreset?.primary || '258 89% 66%',
-            primaryDark: selectedPreset?.primaryDark || '255 91% 76%',
           },
         }),
       ]);
 
-      // Apply theme immediately
-      const primaryHsl = settingsForm.custom_primary_hsl || selectedPreset?.primary || '258 89% 66%';
-      const primaryDarkHsl = selectedPreset?.primaryDark || '255 91% 76%';
-      document.documentElement.style.setProperty('--primary', primaryHsl);
-      document.documentElement.style.setProperty('--ring', primaryHsl);
+      // Theme will be applied automatically by ThemeContext on settings change
 
       toast.success('Settings saved successfully');
     } catch {
