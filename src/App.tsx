@@ -37,12 +37,9 @@ function ScrollToTopOnNavigate() {
 
 const AppLayout = () => {
   const location = useLocation();
-  const { settings } = useSiteSettings();
   const isChapterReader = /^\/manga\/[^/]+\/chapter\//.test(location.pathname);
   const isAdminPanel = location.pathname.startsWith('/admin');
   const hideShell = isChapterReader || isAdminPanel;
-
-  // Theme is now handled by ThemeContext
 
   return (
     <div className="min-h-screen flex flex-col">
