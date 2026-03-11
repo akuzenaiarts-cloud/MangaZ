@@ -202,7 +202,7 @@ export default function AdminPanel() {
 
   const handleSaveSettings = async () => {
     try {
-      const selectedPreset = THEME_PRESETS.find(t => t.name === settingsForm.theme_preset);
+      const selectedPreset = ALL_THEME_PRESETS.find(t => t.name === settingsForm.theme_preset);
       
       await Promise.all([
         updateSettings.mutateAsync({
