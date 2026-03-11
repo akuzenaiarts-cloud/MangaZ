@@ -109,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginWithEmail,
         signUpWithEmail,
         logout,
+        refreshProfile: async () => { if (user) await fetchProfile(user.id); },
         showLoginModal,
         setShowLoginModal,
       }}
