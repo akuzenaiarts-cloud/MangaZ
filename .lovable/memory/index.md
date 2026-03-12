@@ -1,4 +1,4 @@
-Project memory for Kayn Scan manga reader platform
+Project memory for MangaHub v1 manga reader platform
 
 ## Architecture
 - Site settings stored in `site_settings` table (key-value with JSONB)
@@ -7,6 +7,7 @@ Project memory for Kayn Scan manga reader platform
 - Footer text + tagline are dynamic from DB
 - Navbar site name + logo are dynamic from DB
 - Theme presets applied via ThemeContext from settings (full CSS variable override)
+- Default theme preset: Sakura
 
 ## Auth
 - Supports Discord, Google, and Email login
@@ -59,3 +60,8 @@ Project memory for Kayn Scan manga reader platform
 - Premium chapters show lock icon + coin cost in chapter list
 - ScrollToTop button at bottom-left
 - ScrollToTopOnNavigate resets scroll on route change
+
+## Deployment
+- Canonical published URL: scan-zen-studio.lovable.app
+- Auth redirect URLs must match canonical domain
+- CSS defaults match Sakura theme to prevent flash on load
