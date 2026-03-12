@@ -149,12 +149,26 @@ export const MangaFormModal = ({ open, onOpenChange, manga }: MangaFormModalProp
         pinned: manga.pinned || false,
         featured: manga.featured || false,
         trending: manga.trending || false,
-        discord_enabled: !!(manga as any).discord_webhook_url,
-        discord_webhook_url: (manga as any).discord_webhook_url || "",
-        discord_channel_name: (manga as any).discord_channel_name || "",
-        discord_primary_role_id: (manga as any).discord_primary_role_id || "",
-        discord_secondary_role_id: (manga as any).discord_secondary_role_id || "",
-        discord_notification_template: (manga as any).discord_notification_template || "New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}",
+        discord_enabled: false,
+        discord_webhook_url: "",
+        discord_channel_name: "",
+        discord_primary_role_id: "",
+        discord_secondary_role_id: "",
+        discord_notification_template: "New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}",
+      });
+      // Load discord settings from separate table
+      if (manga) {
+        supabase.from('manga_discord_settings').select('*').eq('manga_id', manga.id).maybeSingle().then(({ data }) => {
+          if (data) {
+            form.setValue('discord_enabled', !!data.webhook_url);
+            form.setValue('discord_webhook_url', data.webhook_url || '');
+            form.setValue('discord_channel_name', data.channel_name || '');
+            form.setValue('discord_primary_role_id', data.primary_role_id || '');
+            form.setValue('discord_secondary_role_id', data.secondary_role_id || '');
+            form.setValue('discord_notification_template', data.notification_template || "New chapter released: {manga_title} - Chapter {chapter_number}: {chapter_title}");
+          }
+        });
+      }
       });
       setCoverPreview(manga.cover_url);
       setBannerPreview(manga.banner_url || "");
