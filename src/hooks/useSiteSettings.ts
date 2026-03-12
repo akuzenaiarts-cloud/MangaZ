@@ -43,9 +43,9 @@ export interface SiteSettings {
 
 const DEFAULT_SETTINGS: SiteSettings = {
   general: {
-    site_name: 'Kayn Scan',
+    site_name: 'MangaHub v1',
     site_description: 'Read the latest manga, manhwa, and manhua translations.',
-    footer_text: 'Kayn Scan',
+    footer_text: 'MangaHub v1',
     footer_tagline: 'Your gateway to manga',
   },
   announcements: { message: '' },
