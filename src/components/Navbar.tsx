@@ -24,7 +24,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const siteName = settings.general.site_name || 'Kayn Scan';
+  const siteName = settings.general.site_name || 'MangaHub v1';
   const isActive = (path: string) => location.pathname === path;
   const isSubPage = location.pathname.startsWith('/manga/');
 
