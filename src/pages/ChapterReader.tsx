@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Home, List, ZoomIn, ZoomOut, RotateCcw,
-  BookOpen, Share2, Flag, MessageSquare, Settings, X,
+  BookOpen, Share2, Flag, MessageSquare, Settings, X, Lock, Coins, ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMangaBySlug, useMangaChapters } from '@/hooks/useMangaBySlug';
@@ -11,6 +11,9 @@ import ChapterListModal from '@/components/ChapterListModal';
 import { useToast } from '@/hooks/use-toast';
 import { useRecordReading } from '@/hooks/useReadingHistory';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChapterUnlock, useUserCoinBalance } from '@/hooks/useChapterUnlock';
+import { usePremiumSettings } from '@/hooks/usePremiumSettings';
+import { toast as sonnerToast } from 'sonner';
 
 export default function ChapterReader() {
   const { slug, chapterId } = useParams<{ slug: string; chapterId: string }>();
