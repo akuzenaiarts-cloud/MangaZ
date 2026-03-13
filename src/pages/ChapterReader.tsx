@@ -18,8 +18,9 @@ import { toast as sonnerToast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
-function CountdownTimer({ targetDate }: { targetDate: string }) {
+function CountdownTimer({ targetDate, onExpired }: { targetDate: string; onExpired?: () => void }) {
   const [timeLeft, setTimeLeft] = useState('');
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     const update = () => {
@@ -28,18 +29,21 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
       const diff = target - now;
       if (diff <= 0) {
         setTimeLeft('Available now!');
+        if (!expired) {
+          setExpired(true);
+          onExpired?.();
+        }
         return;
       }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      const parts = [];
-      if (d > 0) parts.push(`${String(d).padStart(2, '0')}`);
-      parts.push(String(h).padStart(2, '0'));
-      parts.push(String(m).padStart(2, '0'));
-      parts.push(String(s).padStart(2, '0'));
-      setTimeLeft(parts.join(':'));
+      if (d > 0) {
+        setTimeLeft(`${d}d ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+      } else {
+        setTimeLeft(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+      }
     };
     update();
     const interval = setInterval(update, 1000);
