@@ -61,7 +61,7 @@ const AppLayout = () => {
         </Routes>
       </main>
       {!hideShell && <Footer />}
-      {!hideShell && <ScrollToTop />}
+      <ScrollToTop />
       <LoginModal />
     </div>
   );

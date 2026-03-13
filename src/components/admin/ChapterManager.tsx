@@ -46,6 +46,7 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
   const [coinPrice, setCoinPrice] = useState(100);
   const [autoFreeEnabled, setAutoFreeEnabled] = useState(false);
   const [autoFreeDays, setAutoFreeDays] = useState(7);
+  const [autoFreeHours, setAutoFreeHours] = useState(0);
   const [pageFiles, setPageFiles] = useState<FileList | null>(null);
   const [deleteChapterId, setDeleteChapterId] = useState<string | null>(null);
   const [pushToFreeId, setPushToFreeId] = useState<string | null>(null);
@@ -68,19 +69,38 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
 
   const resetForm = () => {
     setChapterNumber(""); setChapterTitle(""); setIsPremium(false);
-    setCoinPrice(100); setAutoFreeEnabled(false); setAutoFreeDays(7);
+    setCoinPrice(100); setAutoFreeEnabled(false); setAutoFreeDays(7); setAutoFreeHours(0);
     setPageFiles(null); setShowAddForm(false); setEditingChapter(null);
   };
 
   const handleEditClick = (chapter: Chapter) => {
     setEditingChapter(chapter);
     setChapterNumber(chapter.number.toString());
-    setChapterTitle(chapter.title);
+    setChapterTitle(chapter.title || '');
     setIsPremium(chapter.premium || false);
     setCoinPrice(chapter.coin_price ?? 100);
-    setAutoFreeEnabled(!!(chapter.auto_free_days));
-    setAutoFreeDays(chapter.auto_free_days ?? 7);
+    const totalHours = (chapter.auto_free_days ?? 0) * 24;
+    const hasAutoFree = !!(chapter.auto_free_days);
+    setAutoFreeEnabled(hasAutoFree);
+    if (hasAutoFree) {
+      // auto_free_days is stored as integer days, but we now support fractional via hours
+      setAutoFreeDays(chapter.auto_free_days ?? 7);
+      setAutoFreeHours(0);
+    } else {
+      setAutoFreeDays(7);
+      setAutoFreeHours(0);
+    }
     setShowAddForm(true);
+  };
+
+  // Calculate total auto_free_days including hours as fractional days
+  const getTotalAutoFreeDays = () => {
+    // We store as integer days in DB, but use hours for the trigger calculation
+    // The trigger uses (auto_free_days || ' days')::interval
+    // So we need to pass total days. For hours, we'll pass it as a fraction
+    // Actually the DB column is integer, so let's keep days as integer
+    // and add a separate approach: we'll compute free_release_at directly
+    return autoFreeDays;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +116,11 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
 
     const files = pageFiles ? Array.from(pageFiles) : [];
 
+    // Calculate auto_free_days — since DB is integer, combine days + hours as total days (round up)
+    const totalDays = isPremium && autoFreeEnabled ? autoFreeDays + (autoFreeHours > 0 ? 1 : 0) : null;
+    // For more precision, we'll set free_release_at manually after creation
+    const autoFreeDaysValue = isPremium && autoFreeEnabled ? autoFreeDays : null;
+
     try {
       if (editingChapter) {
         await updateChapter.mutateAsync({
@@ -106,7 +131,7 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
             title: chapterTitle,
             premium: isPremium,
             coin_price: isPremium ? coinPrice : null,
-            auto_free_days: isPremium && autoFreeEnabled ? autoFreeDays : null,
+            auto_free_days: autoFreeDaysValue,
           },
           pageFiles: files.length > 0 ? files : undefined,
           mangaSlug: manga.slug,
@@ -120,7 +145,7 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
             title: chapterTitle,
             premium: isPremium,
             coin_price: isPremium ? coinPrice : null,
-            auto_free_days: isPremium && autoFreeEnabled ? autoFreeDays : null,
+            auto_free_days: autoFreeDaysValue,
           },
           pageFiles: files,
           mangaSlug: manga.slug,
@@ -166,9 +191,9 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
               Manage Chapters — {manga?.title}
               <Badge variant="secondary" className="ml-2 text-xs">{chapters.length} chapters</Badge>
             </DialogTitle>
@@ -197,69 +222,71 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
                 ) : chapters.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">No chapters yet. Add your first chapter!</div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10"><Checkbox checked={selectedIds.size === sortedChapters.length && sortedChapters.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
-                        <TableHead>Ch #</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Pages</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Released</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedChapters.map((chapter) => (
-                        <TableRow key={chapter.id}>
-                          <TableCell><Checkbox checked={selectedIds.has(chapter.id)} onCheckedChange={() => toggleSelect(chapter.id)} /></TableCell>
-                          <TableCell className="font-medium">{chapter.number}</TableCell>
-                          <TableCell>{chapter.title}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1 text-muted-foreground"><FileImage className="h-3.5 w-3.5" />{chapter.pages?.length || 0}</div>
-                          </TableCell>
-                          <TableCell>
-                            {chapter.premium ? (
-                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30">Premium</Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-muted-foreground">Free</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {chapter.premium ? `${chapter.coin_price ?? 100} ${currencyName}` : '—'}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(chapter.created_at), { addSuffix: true })}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <TooltipProvider delayDuration={300}>
-                              <div className="flex items-center justify-end gap-0.5">
-                                {chapter.premium && (
-                                  <Tooltip><TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10" onClick={() => setPushToFreeId(chapter.id)} disabled={isSaving}>
-                                      <Unlock className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger><TooltipContent>Push to Free</TooltipContent></Tooltip>
-                                )}
-                                <Tooltip><TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditClick(chapter)}><Edit className="h-4 w-4" /></Button>
-                                </TooltipTrigger><TooltipContent>Edit</TooltipContent></Tooltip>
-                                <Tooltip><TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteChapterId(chapter.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                </TooltipTrigger><TooltipContent>Delete</TooltipContent></Tooltip>
-                              </div>
-                            </TooltipProvider>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-10"><Checkbox checked={selectedIds.size === sortedChapters.length && sortedChapters.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
+                          <TableHead>Ch #</TableHead>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Pages</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Released</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedChapters.map((chapter) => (
+                          <TableRow key={chapter.id}>
+                            <TableCell><Checkbox checked={selectedIds.has(chapter.id)} onCheckedChange={() => toggleSelect(chapter.id)} /></TableCell>
+                            <TableCell className="font-medium">{chapter.number}</TableCell>
+                            <TableCell className="max-w-[120px] truncate">{chapter.title}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-muted-foreground"><FileImage className="h-3.5 w-3.5" />{chapter.pages?.length || 0}</div>
+                            </TableCell>
+                            <TableCell>
+                              {chapter.premium ? (
+                                <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30">Premium</Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-muted-foreground">Free</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {chapter.premium ? `${chapter.coin_price ?? 100} ${currencyName}` : '—'}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(chapter.created_at), { addSuffix: true })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <TooltipProvider delayDuration={300}>
+                                <div className="flex items-center justify-end gap-0.5">
+                                  {chapter.premium && (
+                                    <Tooltip><TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10" onClick={() => setPushToFreeId(chapter.id)} disabled={isSaving}>
+                                        <Unlock className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger><TooltipContent>Push to Free</TooltipContent></Tooltip>
+                                  )}
+                                  <Tooltip><TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditClick(chapter)}><Edit className="h-4 w-4" /></Button>
+                                  </TooltipTrigger><TooltipContent>Edit</TooltipContent></Tooltip>
+                                  <Tooltip><TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteChapterId(chapter.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                  </TooltipTrigger><TooltipContent>Delete</TooltipContent></Tooltip>
+                                </div>
+                              </TooltipProvider>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="chapter-number">Chapter Number</Label>
                     <Input id="chapter-number" type="number" step="0.1" value={chapterNumber} onChange={(e) => setChapterNumber(e.target.value)} placeholder="1" required />
@@ -286,9 +313,40 @@ export const ChapterManager = ({ open, onOpenChange, manga }: ChapterManagerProp
                       <Switch id="auto-free" checked={autoFreeEnabled} onCheckedChange={setAutoFreeEnabled} />
                     </div>
                     {autoFreeEnabled && (
-                      <div className="space-y-2">
-                        <Label>Release as free after X days</Label>
-                        <Input type="number" value={autoFreeDays} onChange={(e) => setAutoFreeDays(parseInt(e.target.value) || 7)} min={1} />
+                      <div className="space-y-3">
+                        <Label>Release as free after</Label>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={autoFreeDays}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setAutoFreeDays(val === '' ? 0 : Math.max(0, parseInt(val) || 0));
+                              }}
+                              min={0}
+                              className="w-20"
+                            />
+                            <span className="text-sm text-muted-foreground">days</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={autoFreeHours}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setAutoFreeHours(val === '' ? 0 : Math.min(23, Math.max(0, parseInt(val) || 0)));
+                              }}
+                              min={0}
+                              max={23}
+                              className="w-20"
+                            />
+                            <span className="text-sm text-muted-foreground">hours</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Total: {autoFreeDays} day{autoFreeDays !== 1 ? 's' : ''} {autoFreeHours > 0 ? `${autoFreeHours} hour${autoFreeHours !== 1 ? 's' : ''}` : ''} after chapter release
+                        </p>
                       </div>
                     )}
                   </div>

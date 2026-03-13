@@ -12,12 +12,9 @@ export default function NotificationMenu() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [open, setOpen] = useState(false);
 
+  // Hide entirely for logged-out users
   if (!isAuthenticated) {
-    return (
-      <Button variant="ghost" size="icon" className="rounded-full h-11 w-11 bg-muted/60 hover:bg-muted relative">
-        <Bell className="w-4 h-4" />
-      </Button>
-    );
+    return null;
   }
 
   return (
@@ -30,7 +27,7 @@ export default function NotificationMenu() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-0 rounded-2xl border-border bg-card shadow-xl" align="end" sideOffset={8}>
+      <PopoverContent className="w-[min(380px,calc(100vw-2rem))] p-0 rounded-2xl border-border bg-card shadow-xl" align="end" sideOffset={8}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h3 className="font-semibold text-sm">Notifications</h3>
           {unreadCount > 0 && (
