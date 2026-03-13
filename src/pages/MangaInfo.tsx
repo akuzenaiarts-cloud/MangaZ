@@ -39,7 +39,8 @@ export default function MangaInfo() {
   const { isSubscribed, toggleSubscription } = useMangaSubscription(manga?.id);
   const { isBookmarked, toggleBookmark } = useMangaBookmark(manga?.id);
   const { settings } = useSiteSettings();
-  const { data: allManga = [] } = useAllManga();
+  const { settings: premiumSettings } = usePremiumSettings();
+  const currencyName = premiumSettings.coin_system.currency_name;
   // Trending sidebar: top 8 by views (automatic)
   const trending = [...allManga].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
   const [expanded, setExpanded] = useState(false);
