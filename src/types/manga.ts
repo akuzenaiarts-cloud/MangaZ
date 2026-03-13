@@ -11,6 +11,7 @@ export interface Chapter {
   date: string;
   pages?: string[];
   premium?: boolean;
+  coin_price?: number | null;
 }
 
 export interface Comment {
