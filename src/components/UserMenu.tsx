@@ -89,7 +89,7 @@ export default function UserMenu() {
             </Link>
             <Link to="/coin-shop" onClick={close}>
               <Button variant="ghost" className="w-full justify-start gap-2.5 rounded-xl h-10 hover:bg-muted text-sm font-medium">
-                <ShoppingCart className="w-4 h-4" /> Coin Shop
+                <ShoppingCart className="w-4 h-4" /> {currencyName} Shop
               </Button>
             </Link>
             <Link to="/settings" onClick={close}>
