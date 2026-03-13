@@ -31,6 +31,9 @@ export default function ChapterReader() {
   });
   const recordReading = useRecordReading();
   const { user } = useAuth();
+  const { settings: premiumSettings } = usePremiumSettings();
+  const currencyName = premiumSettings.coin_system.currency_name;
+  const coinBalance = useUserCoinBalance();
 
   useEffect(() => {
     window.scrollTo(0, 0);
