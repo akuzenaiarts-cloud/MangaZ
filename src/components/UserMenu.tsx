@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { usePremiumSettings } from '@/hooks/usePremiumSettings';
 
 export default function UserMenu() {
   const { profile, logout } = useAuth();
