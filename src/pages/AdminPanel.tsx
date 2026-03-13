@@ -498,6 +498,15 @@ export default function AdminPanel() {
               <h1 className="text-2xl font-bold">User Management</h1>
               <p className="text-muted-foreground text-sm mt-1">{users.length} registered users</p>
             </div>
+            {/* User tabs */}
+            <div className="flex gap-2">
+              {(['all', 'admins'] as UserTab[]).map(t => (
+                <button key={t} onClick={() => setUserTab(t)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${userTab === t ? 'bg-primary/10 text-primary' : 'bg-muted/50 text-muted-foreground hover:text-foreground'}`}>
+                  {t === 'all' ? 'All Users' : 'Admins'}
+                </button>
+              ))}
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search users..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="pl-9 rounded-xl bg-card border-border" />
@@ -509,7 +518,7 @@ export default function AdminPanel() {
               <div className="divide-y divide-border">
                 {usersLoading ? (
                   <div className="text-center py-12 text-muted-foreground text-sm">Loading users...</div>
-                ) : filteredUsers.map(u => (
+                ) : filteredUsers.filter(u => userTab === 'all' || u.is_admin).map(u => (
                   <div key={u.id} className="flex flex-col md:grid md:grid-cols-[1fr_200px_120px_80px] gap-2 md:gap-3 px-5 py-3 hover:bg-muted/30 transition-colors items-start md:items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0">
@@ -521,14 +530,23 @@ export default function AdminPanel() {
                       </div>
                     </div>
                     <span className="text-sm text-muted-foreground">{new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground w-fit">User</span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted">
+                    <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${u.is_admin ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                      {u.is_admin ? 'Admin' : 'User'}
+                    </span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted" onClick={() => {
+                      setUserActionModal(u);
+                      setEditUserName(u.display_name || '');
+                      setEditUserAvatar(u.avatar_url || '');
+                      setEditCoinBalance(u.coin_balance ?? 0);
+                      setEditTokenBalance(u.token_balance ?? 0);
+                      setBlockIp('');
+                    }}>
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </div>
                 ))}
               </div>
-              {!usersLoading && filteredUsers.length === 0 && (
+              {!usersLoading && filteredUsers.filter(u => userTab === 'all' || u.is_admin).length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">No users found.</div>
               )}
             </div>
