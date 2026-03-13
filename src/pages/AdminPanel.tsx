@@ -79,6 +79,15 @@ export default function AdminPanel() {
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [deleteMangaId, setDeleteMangaId] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [userTab, setUserTab] = useState<UserTab>('all');
+  const [userActionModal, setUserActionModal] = useState<UserRow | null>(null);
+  const [editUserName, setEditUserName] = useState('');
+  const [editUserAvatar, setEditUserAvatar] = useState('');
+  const [editCoinBalance, setEditCoinBalance] = useState(0);
+  const [editTokenBalance, setEditTokenBalance] = useState(0);
+  const [blockIp, setBlockIp] = useState('');
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const { settings: premiumSettings } = usePremiumSettings();
 
   // Settings form state
   const [settingsForm, setSettingsForm] = useState({
