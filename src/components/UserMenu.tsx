@@ -7,16 +7,33 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { usePremiumSettings } from '@/hooks/usePremiumSettings';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function UserMenu() {
-  const { profile, logout } = useAuth();
+  const { profile, logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { isAdmin } = useIsAdmin();
   const { settings: premiumSettings } = usePremiumSettings();
   const currencyName = premiumSettings.coin_system.currency_name;
+  const currencyIconUrl = premiumSettings.coin_system.currency_icon_url;
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
+  // Fetch balances
+  const { data: balances } = useQuery({
+    queryKey: ['user-balances', user?.id],
+    queryFn: async () => {
+      if (!user) return { coin_balance: 0, token_balance: 0 };
+      const { data } = await supabase.from('profiles').select('coin_balance, token_balance').eq('id', user.id).single();
+      return { coin_balance: data?.coin_balance ?? 0, token_balance: data?.token_balance ?? 0 };
+    },
+    enabled: !!user,
+  });
+
+  const coinBalance = balances?.coin_balance ?? 0;
+  const tokenBalance = balances?.token_balance ?? 0;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -30,9 +47,15 @@ export default function UserMenu() {
 
   const close = () => setOpen(false);
 
+  const CurrencyIcon = ({ className }: { className?: string }) =>
+    currencyIconUrl ? (
+      <img src={currencyIconUrl} alt={currencyName} className={`${className} object-contain`} />
+    ) : (
+      <Coins className={className} />
+    );
+
   return (
     <div className="relative" ref={menuRef}>
-      {/* Trigger: icon-only on mobile/tablet, icon+name on desktop */}
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-full bg-muted/60 border border-border/40 hover:bg-muted transition-all duration-200 hover:scale-[1.02] h-11 px-2 lg:px-4"
@@ -49,7 +72,6 @@ export default function UserMenu() {
         </span>
       </button>
 
-      {/* Floating menu */}
       {open && (
         <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl bg-card border border-border/60 shadow-2xl p-3 z-[200] animate-in fade-in zoom-in-95 duration-150">
           {/* Top row: Library + Theme toggle */}
@@ -69,6 +91,27 @@ export default function UserMenu() {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
+          </div>
+
+          {/* Balance Card */}
+          <div className="rounded-xl border border-border/40 bg-muted/30 p-3 mb-2">
+            <p className="text-[10px] font-semibold text-muted-foreground text-center mb-2 uppercase tracking-wider">Your Balance</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 rounded-lg bg-background/60 p-2">
+                <CurrencyIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground leading-tight">{coinBalance}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{currencyName}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 rounded-lg bg-background/60 p-2">
+                <Ticket className="w-4 h-4 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground leading-tight">{tokenBalance}</p>
+                  <p className="text-[10px] text-muted-foreground">Tickets</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="h-px bg-border/40 my-1.5" />
