@@ -62,14 +62,14 @@ export default function LoginModal() {
 
   return (
     <Dialog open={showLoginModal} onOpenChange={resetAndClose}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-md bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl">
+          <DialogTitle className="text-center text-lg sm:text-xl">
             {view === 'main' && `Welcome to ${siteName}`}
             {view === 'email-login' && 'Sign in with Email'}
             {view === 'email-signup' && 'Create an Account'}
           </DialogTitle>
-          <DialogDescription className="text-center">
+          <DialogDescription className="text-center text-xs sm:text-sm">
             {view === 'main' && 'Sign in to access your library and interact with the community.'}
             {view === 'email-login' && 'Enter your email and password to sign in.'}
             {view === 'email-signup' && 'Create a new account to get started.'}
@@ -80,7 +80,7 @@ export default function LoginModal() {
           <div className="flex flex-col gap-3 pt-4">
             <Button
               variant="outline"
-              className="h-12 gap-3 text-sm border-[hsl(235,86%,65%)]/30 hover:bg-[hsl(235,86%,65%)]/10 hover:border-[hsl(235,86%,65%)]/60"
+              className="h-11 sm:h-12 gap-3 text-sm border-[hsl(235,86%,65%)]/30 hover:bg-[hsl(235,86%,65%)]/10 hover:border-[hsl(235,86%,65%)]/60"
               onClick={() => handleLogin('discord')}
               disabled={!!loggingIn}
             >
@@ -95,7 +95,7 @@ export default function LoginModal() {
             </Button>
             <Button
               variant="outline"
-              className="h-12 gap-3 text-sm"
+              className="h-11 sm:h-12 gap-3 text-sm"
               onClick={() => handleLogin('google')}
               disabled={!!loggingIn}
             >
@@ -119,7 +119,7 @@ export default function LoginModal() {
 
             <Button
               variant="outline"
-              className="h-12 gap-3 text-sm"
+              className="h-11 sm:h-12 gap-3 text-sm"
               onClick={() => setView('email-login')}
             >
               <Mail className="w-5 h-5" />
@@ -148,17 +148,17 @@ export default function LoginModal() {
               placeholder="Email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="h-12 rounded-xl"
+              className="h-11 sm:h-12 rounded-xl"
             />
             <Input
               type="password"
               placeholder="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="h-12 rounded-xl"
+              className="h-11 sm:h-12 rounded-xl"
               onKeyDown={e => e.key === 'Enter' && handleEmailLogin()}
             />
-            <Button className="h-12 rounded-xl" onClick={handleEmailLogin} disabled={emailLoading}>
+            <Button className="h-11 sm:h-12 rounded-xl" onClick={handleEmailLogin} disabled={emailLoading}>
               {emailLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
@@ -183,24 +183,24 @@ export default function LoginModal() {
               placeholder="Display Name (optional)"
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
-              className="h-12 rounded-xl"
+              className="h-11 sm:h-12 rounded-xl"
             />
             <Input
               type="email"
               placeholder="Email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="h-12 rounded-xl"
+              className="h-11 sm:h-12 rounded-xl"
             />
             <Input
               type="password"
               placeholder="Password (min 6 characters)"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="h-12 rounded-xl"
+              className="h-11 sm:h-12 rounded-xl"
               onKeyDown={e => e.key === 'Enter' && handleEmailSignup()}
             />
-            <Button className="h-12 rounded-xl" onClick={handleEmailSignup} disabled={emailLoading}>
+            <Button className="h-11 sm:h-12 rounded-xl" onClick={handleEmailSignup} disabled={emailLoading}>
               {emailLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
