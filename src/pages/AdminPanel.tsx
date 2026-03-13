@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BookOpen, Users, Settings, ArrowLeft, Plus, Search,
   Eye, Star, Bookmark, TrendingUp, Edit, Trash2, Shield, ChevronDown,
   BarChart3, FileText, Bell, Globe, Upload, MoreHorizontal, List, Save, RotateCcw, Image,
-  Database, Palette, Link2, ExternalLink, Crown
+  Database, Palette, Link2, ExternalLink, Crown, X
 } from 'lucide-react';
 import PremiumContent from '@/pages/admin/PremiumContent';
 import { Button } from '@/components/ui/button';
@@ -17,24 +17,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminManga, useDeleteManga } from '@/hooks/useManga';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { usePremiumSettings } from '@/hooks/usePremiumSettings';
 import { MangaFormModal } from '@/components/admin/MangaFormModal';
 import { ChapterManager } from '@/components/admin/ChapterManager';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
 type Manga = Tables<"manga">;
 type Tab = 'overview' | 'manga' | 'premium' | 'users' | 'settings';
 type SettingsSubTab = 'general' | 'theme' | 'announcements' | 'upload' | 'storage';
+type UserTab = 'all' | 'admins';
 
 interface UserRow {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
   created_at: string;
+  coin_balance?: number | null;
+  token_balance?: number | null;
+  is_admin?: boolean;
 }
 
 import { THEME_PRESETS as ALL_THEME_PRESETS } from '@/lib/themes';
