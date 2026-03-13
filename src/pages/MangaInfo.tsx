@@ -348,7 +348,7 @@ export default function MangaInfo() {
           </div>
 
           {/* Comments */}
-          <CommentSection mangaId={manga.id} />
+          <CommentSection mangaId={manga.id} contextType="manga" contextId={manga.id} />
         </div>
 
         {/* Trending Sidebar */}

@@ -338,7 +338,7 @@ export default function ChapterReader() {
 
             {/* Comments */}
             <div className="py-6">
-              <CommentSection mangaId={manga?.id || ''} />
+              <CommentSection mangaId={manga?.id || ''} contextType="chapter" contextId={currentChapter?.id} />
             </div>
           </div>
         </div>

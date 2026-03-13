@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BookOpen, Users, Settings, ArrowLeft, Plus, Search,
   Eye, Star, Bookmark, TrendingUp, Edit, Trash2, Shield, ChevronDown,
   BarChart3, FileText, Bell, Globe, Upload, MoreHorizontal, List, Save, RotateCcw, Image,
-  Database, Palette, Link2, ExternalLink, Crown
+  Database, Palette, Link2, ExternalLink, Crown, X
 } from 'lucide-react';
 import PremiumContent from '@/pages/admin/PremiumContent';
 import { Button } from '@/components/ui/button';
@@ -17,24 +17,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminManga, useDeleteManga } from '@/hooks/useManga';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { usePremiumSettings } from '@/hooks/usePremiumSettings';
 import { MangaFormModal } from '@/components/admin/MangaFormModal';
 import { ChapterManager } from '@/components/admin/ChapterManager';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
 type Manga = Tables<"manga">;
 type Tab = 'overview' | 'manga' | 'premium' | 'users' | 'settings';
 type SettingsSubTab = 'general' | 'theme' | 'announcements' | 'upload' | 'storage';
+type UserTab = 'all' | 'admins';
 
 interface UserRow {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
   created_at: string;
+  coin_balance?: number | null;
+  token_balance?: number | null;
+  is_admin?: boolean;
 }
 
 import { THEME_PRESETS as ALL_THEME_PRESETS } from '@/lib/themes';
@@ -71,6 +79,15 @@ export default function AdminPanel() {
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [deleteMangaId, setDeleteMangaId] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [userTab, setUserTab] = useState<UserTab>('all');
+  const [userActionModal, setUserActionModal] = useState<UserRow | null>(null);
+  const [editUserName, setEditUserName] = useState('');
+  const [editUserAvatar, setEditUserAvatar] = useState('');
+  const [editCoinBalance, setEditCoinBalance] = useState(0);
+  const [editTokenBalance, setEditTokenBalance] = useState(0);
+  const [blockIp, setBlockIp] = useState('');
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const { settings: premiumSettings } = usePremiumSettings();
 
   // Settings form state
   const [settingsForm, setSettingsForm] = useState({
@@ -133,8 +150,12 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     setUsersLoading(true);
-    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-    setUsers((data as UserRow[]) || []);
+    const { data } = await supabase.from('profiles').select('id, display_name, avatar_url, created_at, coin_balance, token_balance').order('created_at', { ascending: false });
+    // Get admin user IDs
+    const { data: adminRoles } = await supabase.from('user_roles').select('user_id').eq('role', 'admin');
+    const adminIds = (adminRoles || []).map(r => r.user_id);
+    const enriched = (data || []).map(u => ({ ...u, is_admin: adminIds.includes(u.id) }));
+    setUsers(enriched as UserRow[]);
     setUsersLoading(false);
   };
 
@@ -477,6 +498,15 @@ export default function AdminPanel() {
               <h1 className="text-2xl font-bold">User Management</h1>
               <p className="text-muted-foreground text-sm mt-1">{users.length} registered users</p>
             </div>
+            {/* User tabs */}
+            <div className="flex gap-2">
+              {(['all', 'admins'] as UserTab[]).map(t => (
+                <button key={t} onClick={() => setUserTab(t)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${userTab === t ? 'bg-primary/10 text-primary' : 'bg-muted/50 text-muted-foreground hover:text-foreground'}`}>
+                  {t === 'all' ? 'All Users' : 'Admins'}
+                </button>
+              ))}
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search users..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="pl-9 rounded-xl bg-card border-border" />
@@ -488,7 +518,7 @@ export default function AdminPanel() {
               <div className="divide-y divide-border">
                 {usersLoading ? (
                   <div className="text-center py-12 text-muted-foreground text-sm">Loading users...</div>
-                ) : filteredUsers.map(u => (
+                ) : filteredUsers.filter(u => userTab === 'all' || u.is_admin).map(u => (
                   <div key={u.id} className="flex flex-col md:grid md:grid-cols-[1fr_200px_120px_80px] gap-2 md:gap-3 px-5 py-3 hover:bg-muted/30 transition-colors items-start md:items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden shrink-0">
@@ -500,14 +530,23 @@ export default function AdminPanel() {
                       </div>
                     </div>
                     <span className="text-sm text-muted-foreground">{new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground w-fit">User</span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted">
+                    <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${u.is_admin ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                      {u.is_admin ? 'Admin' : 'User'}
+                    </span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted" onClick={() => {
+                      setUserActionModal(u);
+                      setEditUserName(u.display_name || '');
+                      setEditUserAvatar(u.avatar_url || '');
+                      setEditCoinBalance(u.coin_balance ?? 0);
+                      setEditTokenBalance(u.token_balance ?? 0);
+                      setBlockIp('');
+                    }}>
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </div>
                 ))}
               </div>
-              {!usersLoading && filteredUsers.length === 0 && (
+              {!usersLoading && filteredUsers.filter(u => userTab === 'all' || u.is_admin).length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">No users found.</div>
               )}
             </div>
@@ -782,19 +821,90 @@ export default function AdminPanel() {
       <MangaFormModal open={mangaFormOpen} onOpenChange={handleMangaFormClose} manga={editingManga || undefined} />
       <ChapterManager open={chapterManagerOpen} onOpenChange={setChapterManagerOpen} manga={selectedManga} />
 
+      {/* User Actions Modal */}
+      <Dialog open={!!userActionModal} onOpenChange={() => setUserActionModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage User — {userActionModal?.display_name || 'Unknown'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Edit Profile */}
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold">Edit Profile</h4>
+              <Input placeholder="Display Name" value={editUserName} onChange={e => setEditUserName(e.target.value)} className="rounded-lg" />
+              <Input placeholder="Avatar URL" value={editUserAvatar} onChange={e => setEditUserAvatar(e.target.value)} className="rounded-lg" />
+              <Button size="sm" onClick={async () => {
+                if (!userActionModal) return;
+                await supabase.from('profiles').update({ display_name: editUserName, avatar_url: editUserAvatar || null }).eq('id', userActionModal.id);
+                toast.success('Profile updated'); fetchUsers();
+              }}>Save Profile</Button>
+            </div>
+
+            {/* Edit Balance */}
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold">Edit Balance</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-muted-foreground">{premiumSettings.coin_system.currency_name}</label>
+                  <Input type="number" value={editCoinBalance} onChange={e => setEditCoinBalance(parseInt(e.target.value) || 0)} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Tickets</label>
+                  <Input type="number" value={editTokenBalance} onChange={e => setEditTokenBalance(parseInt(e.target.value) || 0)} />
+                </div>
+              </div>
+              <Button size="sm" onClick={async () => {
+                if (!userActionModal) return;
+                await supabase.from('profiles').update({ coin_balance: editCoinBalance, token_balance: editTokenBalance }).eq('id', userActionModal.id);
+                toast.success('Balance updated'); fetchUsers();
+              }}>Save Balance</Button>
+            </div>
+
+            {/* Restrict by IP */}
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold">Restrict by IP</h4>
+              <Input placeholder="IP Address" value={blockIp} onChange={e => setBlockIp(e.target.value)} className="rounded-lg" />
+              <Button size="sm" variant="destructive" onClick={async () => {
+                if (!blockIp.trim()) return;
+                await supabase.from('blocked_ips').insert({ ip_address: blockIp.trim() });
+                toast.success('IP blocked'); setBlockIp('');
+              }}>Block IP</Button>
+            </div>
+
+            {/* Delete User */}
+            <Button variant="destructive" className="w-full" onClick={() => { setDeleteUserId(userActionModal?.id || null); setUserActionModal(null); }}>
+              <Trash2 className="w-4 h-4 mr-2" /> Delete User
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteMangaId} onOpenChange={() => setDeleteMangaId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Manga</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this manga? This will permanently delete the series, all its chapters, and all associated images. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Are you sure? This will permanently delete the series, all chapters, and images.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteManga} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteManga} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this user's profile and all associated data. This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+              if (!deleteUserId) return;
+              await supabase.from('profiles').delete().eq('id', deleteUserId);
+              toast.success('User deleted'); setDeleteUserId(null); fetchUsers();
+            }}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

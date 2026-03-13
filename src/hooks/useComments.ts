@@ -8,6 +8,8 @@ export interface CommentRow {
   chapter_id: string | null;
   user_id: string;
   parent_id: string | null;
+  context_type: string | null;
+  context_id: string | null;
   text: string;
   likes_count: number;
   is_pinned: boolean;
@@ -18,21 +20,33 @@ export interface CommentRow {
   replies?: CommentRow[];
 }
 
-export const useComments = (mangaId: string | undefined) => {
+interface UseCommentsOptions {
+  mangaId?: string;
+  contextType: 'manga' | 'chapter';
+  contextId: string;
+}
+
+export const useComments = (mangaId: string | undefined, contextType?: 'manga' | 'chapter', contextId?: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const effectiveContextType = contextType || 'manga';
+  const effectiveContextId = contextId || mangaId || '';
+
+  const queryKey = ['comments', effectiveContextType, effectiveContextId];
 
   const { data: comments = [], isLoading } = useQuery({
-    queryKey: ['comments', mangaId],
+    queryKey,
     queryFn: async () => {
-      if (!mangaId) return [];
+      if (!effectiveContextId) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('comments')
         .select('*')
-        .eq('manga_id', mangaId)
+        .eq('context_type', effectiveContextType)
+        .eq('context_id', effectiveContextId)
         .order('created_at', { ascending: false });
 
+      const { data, error } = await query;
       if (error) throw error;
 
       const userIds = [...new Set((data || []).map(c => c.user_id))];
@@ -82,7 +96,7 @@ export const useComments = (mangaId: string | undefined) => {
 
       return topLevel;
     },
-    enabled: !!mangaId,
+    enabled: !!effectiveContextId,
   });
 
   const addComment = useMutation({
@@ -95,6 +109,8 @@ export const useComments = (mangaId: string | undefined) => {
           user_id: user.id,
           parent_id: parentId || null,
           text,
+          context_type: effectiveContextType,
+          context_id: effectiveContextId,
         })
         .select()
         .single();
@@ -116,8 +132,7 @@ export const useComments = (mangaId: string | undefined) => {
         }
       }
 
-      // Handle @mentions - create notifications for mentioned users
-      // Mentions come in with spaces (already converted from hyphens)
+      // Handle @mentions
       if (mentions && mentions.length > 0) {
         const { data: mentionedProfiles } = await supabase
           .from('profiles')
@@ -144,7 +159,7 @@ export const useComments = (mangaId: string | undefined) => {
 
       return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', mangaId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const editComment = useMutation({
@@ -155,7 +170,7 @@ export const useComments = (mangaId: string | undefined) => {
         .eq('id', commentId);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', mangaId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const deleteComment = useMutation({
@@ -166,7 +181,7 @@ export const useComments = (mangaId: string | undefined) => {
         .eq('id', commentId);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', mangaId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const toggleLike = useMutation({
@@ -178,14 +193,14 @@ export const useComments = (mangaId: string | undefined) => {
         await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: user.id });
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', mangaId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const togglePin = useMutation({
     mutationFn: async ({ commentId, isPinned }: { commentId: string; isPinned: boolean }) => {
       await supabase.from('comments').update({ is_pinned: !isPinned }).eq('id', commentId);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', mangaId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   return { comments, isLoading, addComment, toggleLike, togglePin, editComment, deleteComment };
