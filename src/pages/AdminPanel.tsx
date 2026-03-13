@@ -845,7 +845,7 @@ export default function AdminPanel() {
               <h4 className="text-sm font-semibold">Edit Balance</h4>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-muted-foreground">{premiumSettings.settings.coin_system.currency_name}</label>
+                  <label className="text-xs text-muted-foreground">{premiumSettings.coin_system.currency_name}</label>
                   <Input type="number" value={editCoinBalance} onChange={e => setEditCoinBalance(parseInt(e.target.value) || 0)} />
                 </div>
                 <div>
