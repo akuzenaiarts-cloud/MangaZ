@@ -150,8 +150,12 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     setUsersLoading(true);
-    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-    setUsers((data as UserRow[]) || []);
+    const { data } = await supabase.from('profiles').select('id, display_name, avatar_url, created_at, coin_balance, token_balance').order('created_at', { ascending: false });
+    // Get admin user IDs
+    const { data: adminRoles } = await supabase.from('user_roles').select('user_id').eq('role', 'admin');
+    const adminIds = (adminRoles || []).map(r => r.user_id);
+    const enriched = (data || []).map(u => ({ ...u, is_admin: adminIds.includes(u.id) }));
+    setUsers(enriched as UserRow[]);
     setUsersLoading(false);
   };
 
