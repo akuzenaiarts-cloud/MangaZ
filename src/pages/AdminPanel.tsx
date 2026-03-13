@@ -821,19 +821,90 @@ export default function AdminPanel() {
       <MangaFormModal open={mangaFormOpen} onOpenChange={handleMangaFormClose} manga={editingManga || undefined} />
       <ChapterManager open={chapterManagerOpen} onOpenChange={setChapterManagerOpen} manga={selectedManga} />
 
+      {/* User Actions Modal */}
+      <Dialog open={!!userActionModal} onOpenChange={() => setUserActionModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage User — {userActionModal?.display_name || 'Unknown'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Edit Profile */}
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold">Edit Profile</h4>
+              <Input placeholder="Display Name" value={editUserName} onChange={e => setEditUserName(e.target.value)} className="rounded-lg" />
+              <Input placeholder="Avatar URL" value={editUserAvatar} onChange={e => setEditUserAvatar(e.target.value)} className="rounded-lg" />
+              <Button size="sm" onClick={async () => {
+                if (!userActionModal) return;
+                await supabase.from('profiles').update({ display_name: editUserName, avatar_url: editUserAvatar || null }).eq('id', userActionModal.id);
+                toast.success('Profile updated'); fetchUsers();
+              }}>Save Profile</Button>
+            </div>
+
+            {/* Edit Balance */}
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold">Edit Balance</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-muted-foreground">{premiumSettings.settings.coin_system.currency_name}</label>
+                  <Input type="number" value={editCoinBalance} onChange={e => setEditCoinBalance(parseInt(e.target.value) || 0)} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Tickets</label>
+                  <Input type="number" value={editTokenBalance} onChange={e => setEditTokenBalance(parseInt(e.target.value) || 0)} />
+                </div>
+              </div>
+              <Button size="sm" onClick={async () => {
+                if (!userActionModal) return;
+                await supabase.from('profiles').update({ coin_balance: editCoinBalance, token_balance: editTokenBalance }).eq('id', userActionModal.id);
+                toast.success('Balance updated'); fetchUsers();
+              }}>Save Balance</Button>
+            </div>
+
+            {/* Restrict by IP */}
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold">Restrict by IP</h4>
+              <Input placeholder="IP Address" value={blockIp} onChange={e => setBlockIp(e.target.value)} className="rounded-lg" />
+              <Button size="sm" variant="destructive" onClick={async () => {
+                if (!blockIp.trim()) return;
+                await supabase.from('blocked_ips').insert({ ip_address: blockIp.trim() });
+                toast.success('IP blocked'); setBlockIp('');
+              }}>Block IP</Button>
+            </div>
+
+            {/* Delete User */}
+            <Button variant="destructive" className="w-full" onClick={() => { setDeleteUserId(userActionModal?.id || null); setUserActionModal(null); }}>
+              <Trash2 className="w-4 h-4 mr-2" /> Delete User
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteMangaId} onOpenChange={() => setDeleteMangaId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Manga</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this manga? This will permanently delete the series, all its chapters, and all associated images. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Are you sure? This will permanently delete the series, all chapters, and images.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteManga} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteManga} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this user's profile and all associated data. This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+              if (!deleteUserId) return;
+              await supabase.from('profiles').delete().eq('id', deleteUserId);
+              toast.success('User deleted'); setDeleteUserId(null); fetchUsers();
+            }}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
