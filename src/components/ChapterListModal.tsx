@@ -45,8 +45,9 @@ const ChapterListModal = ({
     enabled: !!user && isOpen,
   });
 
-  const getUnlockStatus = (chapterId: string) => {
-    const unlock = userUnlocks.find(u => u.chapter_id === chapterId);
+  const getUnlockStatus = (chapterId: string | number) => {
+    const id = String(chapterId);
+    const unlock = userUnlocks.find(u => u.chapter_id === id);
     if (!unlock) return null;
     if (unlock.expires_at && new Date(unlock.expires_at) <= new Date()) return null;
     return unlock;
