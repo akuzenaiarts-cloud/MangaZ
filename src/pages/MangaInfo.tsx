@@ -35,15 +35,44 @@ export default function MangaInfo() {
   const { slug } = useParams<{ slug: string }>();
   const { data: manga, isLoading } = useMangaBySlug(slug || '');
   const { data: chapters = [] } = useMangaChapters(manga?.id);
-  const { isAuthenticated, setShowLoginModal } = useAuth();
+  const { isAuthenticated, user, setShowLoginModal } = useAuth();
   const { isSubscribed, toggleSubscription } = useMangaSubscription(manga?.id);
   const { isBookmarked, toggleBookmark } = useMangaBookmark(manga?.id);
   const { settings } = useSiteSettings();
   const { settings: premiumSettings } = usePremiumSettings();
   const currencyName = premiumSettings.coin_system.currency_name;
+  const currencyIconUrl = premiumSettings.coin_system.currency_icon_url;
   const { data: allManga = [] } = useAllManga();
   // Trending sidebar: top 8 by views (automatic)
   const trending = [...allManga].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+
+  // Fetch user's chapter unlocks for this manga
+  const { data: userUnlocks = [] } = useQuery({
+    queryKey: ['user-chapter-unlocks', manga?.id, user?.id],
+    queryFn: async () => {
+      if (!user || !manga) return [];
+      const { data } = await supabase
+        .from('chapter_unlocks')
+        .select('chapter_id, unlock_type, expires_at')
+        .eq('user_id', user.id);
+      return data || [];
+    },
+    enabled: !!user && !!manga,
+  });
+
+  const getUnlockStatus = (chapterId: string) => {
+    const unlock = userUnlocks.find(u => u.chapter_id === chapterId);
+    if (!unlock) return null;
+    if (unlock.expires_at && new Date(unlock.expires_at) <= new Date()) return null;
+    return unlock;
+  };
+
+  const CurrencyIcon = ({ className }: { className?: string }) =>
+    currencyIconUrl ? (
+      <img src={currencyIconUrl} alt={currencyName} className={`${className} object-contain`} />
+    ) : (
+      <Coins className={className} />
+    );
   const [expanded, setExpanded] = useState(false);
   const [reactions, setReactions] = useState<Record<string, number>>(
     Object.fromEntries(REACTIONS.map(r => [r.label, 0]))
