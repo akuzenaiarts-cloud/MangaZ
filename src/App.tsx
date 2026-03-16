@@ -46,20 +46,22 @@ const AppLayout = () => {
       <ScrollToTopOnNavigate />
       {!hideShell && <Navbar />}
       <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/manga/:slug" element={<MangaInfo />} />
-          <Route path="/manga/:slug/chapter/:chapterId" element={<ChapterReader />} />
-          <Route path="/latest" element={<Latest />} />
-          <Route path="/series" element={<Series />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/earn" element={<EarnCoins />} />
-          <Route path="/coin-shop" element={<CoinShop />} />
-          <Route path="/settings" element={<UserSettings />} />
-          <Route path="/dmca" element={<DMCA />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/manga/:slug" element={<MangaInfo />} />
+            <Route path="/manga/:slug/chapter/:chapterId" element={<ChapterReader />} />
+            <Route path="/latest" element={<Latest />} />
+            <Route path="/series" element={<Series />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/earn" element={<EarnCoins />} />
+            <Route path="/coin-shop" element={<CoinShop />} />
+            <Route path="/settings" element={<UserSettings />} />
+            <Route path="/dmca" element={<DMCA />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
       {!hideShell && <Footer />}
       <ScrollToTop />
