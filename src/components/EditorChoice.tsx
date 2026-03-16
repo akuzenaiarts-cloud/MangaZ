@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { optimizedImageUrl } from '@/lib/utils';
 import { useFeaturedManga } from '@/hooks/useFeaturedManga';
 
 export default function EditorChoice() {
