@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Star } from 'lucide-react';
-import { formatViews } from '@/lib/utils';
+import { formatViews, optimizedImageUrl } from '@/lib/utils';
 import { useCompletedManga } from '@/hooks/useCompletedManga';
 import TypeBadge from './TypeBadge';
 
