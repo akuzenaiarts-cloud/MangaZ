@@ -88,7 +88,7 @@ export default function EditorChoice() {
           <div className="hidden md:block relative md:w-[45%] shrink-0 self-stretch">
             <div className="absolute -top-10 -right-2 -bottom-4 -left-2 rounded-2xl overflow-hidden shadow-2xl border border-border/30">
               <img
-                src={manga.cover_url}
+                src={optimizedImageUrl(manga.cover_url, 700, 80)}
                 alt={manga.title}
                 className="w-full h-full object-cover"
               />
