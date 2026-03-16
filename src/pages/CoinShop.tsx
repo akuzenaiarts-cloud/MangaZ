@@ -124,7 +124,6 @@ export default function CoinShop() {
 
   const handlePurchase = async () => {
     if (!selected || !user) return;
-    const totalCoins = selected.coins + (selected.bonus || 0);
     const returnUrl = window.location.origin + '/coin-shop';
 
     if (paymentMethod === 'stripe') {
