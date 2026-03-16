@@ -25,18 +25,27 @@ const statusTextColors: Record<string, string> = {
 export default function HeroCarousel() {
   const { data: allManga = [] } = useAllManga();
   const items = allManga.filter(m => m.featured || m.pinned || m.trending).slice(0, 8);
+  const [mounted, setMounted] = useState(false);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: 'center',
     slidesToScroll: 1,
     dragFree: false,
+    active: mounted,
   });
 
   const [autoplayPaused, setAutoplayPaused] = useState(false);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  // Defer carousel initialization to avoid forced reflow during initial render
+  useEffect(() => {
+    if (!items.length) return;
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, [items.length]);
 
   // Autoplay
   useEffect(() => {
@@ -47,17 +56,19 @@ export default function HeroCarousel() {
     return () => clearInterval(timer);
   }, [emblaApi, autoplayPaused]);
 
-  if (!items.length) return null;
+  if (!items.length) return (
+    <div className="h-[500px] md:h-[550px] bg-secondary/30 rounded-xl" />
+  );
 
   return (
     <div
-      className="relative"
+      className="relative min-h-[500px] md:min-h-[550px]"
       onMouseEnter={() => setAutoplayPaused(true)}
       onMouseLeave={() => setAutoplayPaused(false)}
     >
       {/* Embla viewport */}
       <div ref={emblaRef} className="overflow-hidden contain-layout">
-        <div className="flex">
+        <div className="flex will-change-transform">
           {items.map(manga => (
             <div
               key={manga.id}
