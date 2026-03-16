@@ -107,7 +107,7 @@ export default function EditorChoice() {
           {/* Mobile Cover */}
           <div className="md:hidden relative w-full h-[200px] sm:h-[250px]">
             <div className="relative w-full h-full rounded-b-xl overflow-hidden">
-              <img src={manga.cover_url} alt={manga.title} className="w-full h-full object-cover" />
+              <img src={optimizedImageUrl(manga.cover_url, 500)} alt={manga.title} className="w-full h-full object-cover" />
               <Link to={`/manga/${manga.slug}`} className="absolute bottom-4 right-4">
                 <Button size="sm" className="gap-2 rounded-lg">
                   <Play className="w-3.5 h-3.5 fill-current" />
