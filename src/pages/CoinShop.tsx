@@ -132,7 +132,7 @@ export default function CoinShop() {
         const { data, error } = await supabase.functions.invoke('stripe-checkout', {
           body: {
             action: 'create-checkout',
-            coins: totalCoins,
+            coins: selected.coins,
             amount: selected.price,
             returnUrl,
           },
