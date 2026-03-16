@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Pin, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { formatViews } from '@/lib/utils';
+import { formatViews, optimizedImageUrl } from '@/lib/utils';
 import { usePinnedManga } from '@/hooks/usePinnedManga';
 import TypeBadge from './TypeBadge';
 
