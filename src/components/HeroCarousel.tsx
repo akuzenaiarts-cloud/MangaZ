@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { useAllManga } from '@/hooks/useAllManga';
+import { optimizedImageUrl } from '@/lib/utils';
 import TypeBadge from './TypeBadge';
 
 const statusColors: Record<string, string> = {
