@@ -184,7 +184,7 @@ export default function CoinShop() {
         const { data, error } = await supabase.functions.invoke('nowpayments', {
           body: {
             action: 'create-payment',
-            coins: totalCoins,
+            coins: selected.coins,
             amount: selected.price,
           },
         });
