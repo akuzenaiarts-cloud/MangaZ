@@ -154,7 +154,7 @@ export default function CoinShop() {
         const { data: createData, error: createError } = await supabase.functions.invoke('paypal-purchase', {
           body: {
             action: 'create-order',
-            coins: totalCoins,
+            coins: selected.coins,
             amount: selected.price,
             returnUrl,
           },
