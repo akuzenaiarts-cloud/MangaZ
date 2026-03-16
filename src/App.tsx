@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,17 +11,18 @@ import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
-import MangaInfo from "./pages/MangaInfo";
-import ChapterReader from "./pages/ChapterReader";
-import Latest from "./pages/Latest";
-import Series from "./pages/Series";
-import Library from "./pages/Library";
-import EarnCoins from "./pages/EarnCoins";
-import CoinShop from "./pages/CoinShop";
-import UserSettings from "./pages/UserSettings";
-import DMCA from "./pages/DMCA";
-import AdminPanel from "./pages/AdminPanel";
-import NotFound from "./pages/NotFound";
+
+const MangaInfo = lazy(() => import("./pages/MangaInfo"));
+const ChapterReader = lazy(() => import("./pages/ChapterReader"));
+const Latest = lazy(() => import("./pages/Latest"));
+const Series = lazy(() => import("./pages/Series"));
+const Library = lazy(() => import("./pages/Library"));
+const EarnCoins = lazy(() => import("./pages/EarnCoins"));
+const CoinShop = lazy(() => import("./pages/CoinShop"));
+const UserSettings = lazy(() => import("./pages/UserSettings"));
+const DMCA = lazy(() => import("./pages/DMCA"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
