@@ -99,7 +99,7 @@ serve(async (req) => {
         body: JSON.stringify({
           intent: "CAPTURE",
           purchase_units: [{
-            amount: { currency_code: "INR", value: inrValue },
+            amount: { currency_code: "USD", value: usdValue },
             custom_id: `${user.id}_${coins}`,
           }],
           payment_source: {
