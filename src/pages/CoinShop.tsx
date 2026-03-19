@@ -15,15 +15,6 @@ const PAYMENT_METHODS = [
   { id: 'usdt', label: 'USDT', icon: CircleDollarSign },
 ] as const;
 
-// Fixed USD → INR display mapping
-const USD_INR_MAP: Record<string, string> = {
-  "0.99": "₹84",
-  "2.97": "₹250",
-  "6.93": "₹582",
-  "14.85": "₹1,247",
-  "31.68": "₹2,661",
-  "99.00": "₹8,316",
-};
 
 declare global {
   interface Window {
