@@ -15,15 +15,6 @@ const PAYMENT_METHODS = [
   { id: 'usdt', label: 'USDT', icon: CircleDollarSign },
 ] as const;
 
-// Fixed USD → INR display mapping
-const USD_INR_MAP: Record<string, string> = {
-  "0.99": "₹84",
-  "2.97": "₹250",
-  "6.93": "₹582",
-  "14.85": "₹1,247",
-  "31.68": "₹2,661",
-  "99.00": "₹8,316",
-};
 
 declare global {
   interface Window {
@@ -296,7 +287,6 @@ export default function CoinShop() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           {COIN_PACKAGES.map((pkg) => {
             const isSelected = selectedPkg === pkg.id;
-            const inrLabel = USD_INR_MAP[pkg.price.toFixed(2)];
             return (
               <button
                 key={pkg.id}
@@ -328,12 +318,7 @@ export default function CoinShop() {
                 )}
                 <div className="flex items-baseline justify-between">
                   <span className="text-[10px] sm:text-xs text-muted-foreground">{pkg.label}</span>
-                  <div className="text-right">
-                    <span className="text-base sm:text-lg font-bold text-foreground">${pkg.price}</span>
-                    {inrLabel && (
-                      <p className="text-[10px] text-muted-foreground">≈ {inrLabel}</p>
-                    )}
-                  </div>
+                  <span className="text-base sm:text-lg font-bold text-foreground">${pkg.price}</span>
                 </div>
               </button>
             );
