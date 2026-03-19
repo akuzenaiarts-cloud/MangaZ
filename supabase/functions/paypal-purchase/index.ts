@@ -7,14 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const USD_TO_INR: Record<string, string> = {
-  "0.99": "84",
-  "2.97": "250",
-  "6.93": "582",
-  "14.85": "1247",
-  "31.68": "2661",
-  "99.00": "8316",
-};
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -91,11 +83,10 @@ serve(async (req) => {
 
     // ── CREATE ORDER ──
     if (action === "create-order") {
-      const { amount, coins } = body; // amount is USD price string like "0.99"
-      const usdKey = parseFloat(amount).toFixed(2);
-      const inrValue = USD_TO_INR[usdKey];
+      const { amount, coins } = body;
+      const usdValue = parseFloat(amount).toFixed(2);
 
-      if (!inrValue || !coins || coins <= 0) {
+      if (!usdValue || isNaN(parseFloat(usdValue)) || !coins || coins <= 0) {
         return json({ error: "Invalid package", received: { amount, coins } }, 400);
       }
 
@@ -108,7 +99,7 @@ serve(async (req) => {
         body: JSON.stringify({
           intent: "CAPTURE",
           purchase_units: [{
-            amount: { currency_code: "INR", value: inrValue },
+            amount: { currency_code: "USD", value: usdValue },
             custom_id: `${user.id}_${coins}`,
           }],
           payment_source: {
