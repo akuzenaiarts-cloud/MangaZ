@@ -107,7 +107,7 @@ export default function AdminPanel() {
     storage_provider: 'supabase',
     blogger_blog_id: '',
     blogger_api_key: '',
-    theme_preset: 'Sakura',
+    theme_preset: 'Obsidian',
     custom_primary_hsl: '',
   });
 
