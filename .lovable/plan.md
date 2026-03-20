@@ -1,37 +1,74 @@
 
 
-# Fix Light Mode Not Working With Theme Presets
+# Fix PayPal + Improve Series & Chapter Reader
 
-## Root Cause
+## Part 1: PayPal "Things don't appear to be working" Fix
 
-The previous FOUC fix added three layers of hardcoded dark backgrounds that **cannot be overridden** by theme toggling:
+### Root Cause
 
-1. **`index.html` line 14-15**: `<style>` block with `:root { background: #0a0a0a; }` and `body { background: #0a0a0a; }` — these are unconditional CSS rules
-2. **`index.html` line 30**: `<body style="background-color:#0a0a0a;color:#ffffff">` — inline style has the highest CSS specificity, so Tailwind's `bg-background` class (which uses CSS variables) can never override it
-3. The body's Tailwind class `bg-background` in `index.css` correctly resolves to `hsl(var(--background))`, but the inline style wins every time
+When using the PayPal JavaScript SDK (`paypal.Buttons()`), the SDK manages the `payment_source` internally. The edge function is sending `payment_source.paypal.experience_context` in the create order API call, which conflicts with the SDK's own payment source handling, causing PayPal to error with "Things don't appear to be working."
 
-When the user toggles to light mode, `applyTheme()` correctly sets `--background` to the light value, and the `.dark` class is removed. But the body's inline style (`background-color:#0a0a0a`) never changes, so the dark background persists.
+### Fix: `supabase/functions/paypal-purchase/index.ts`
 
-## Fix
+In the `create-order` action, remove the `payment_source` block entirely from the order body. When using the JS SDK buttons flow, the order should only contain `intent` and `purchase_units`:
 
-### 1. `index.html`
-
-- Remove the inline `style` attribute from `<body>` entirely
-- Change the `<style>` block to scope the dark background under the `.dark` class so it only applies when dark mode is active:
-
-```css
-:root.dark { background: #0a0a0a; }
-.dark body { background: #0a0a0a; color: #ffffff; margin: 0; }
-body { margin: 0; }
+```json
+{
+  "intent": "CAPTURE",
+  "purchase_units": [{
+    "amount": { "currency_code": "USD", "value": "0.99" },
+    "custom_id": "userId_coins"
+  }]
+}
 ```
 
-This preserves FOUC prevention (page starts with `class="dark"` on `<html>`) while allowing light mode to work when the class is removed.
+No frontend changes needed -- the SDK script loading and button rendering are already correct.
 
-### 2. `src/index.css` (no change needed)
+---
 
-The existing `body { @apply bg-background text-foreground; }` will now work correctly since the inline style no longer overrides it.
+## Part 2: Improve Series Page
 
-### 3. No other changes
+Enhance `src/pages/Series.tsx` with:
 
-The `ThemeContext.tsx`, `themes.ts`, and `applyTheme()` logic are all correct. The only problem was the hardcoded inline styles.
+- **Sort dropdown**: Add a sort option (A-Z, Z-A, Latest Update, Most Views) above the results grid
+- **Result count + active filter chips**: Show active filters as dismissible chips above results
+- **Add "season end" and "cancelled" to status filters** since the data contains these statuses
+- **Empty state**: Show a styled empty state when no results match filters
+- **Collapsible genre filter**: Make genre section collapsible to save vertical space on mobile
+
+---
+
+## Part 3: Improve Chapter Reader (MangaFire-inspired)
+
+Based on the MangaFire reference, add a **settings sidebar panel** and improve the reading experience:
+
+### 3a. Reading Settings Sidebar
+
+Replace the current floating options button with a slide-out sidebar (right side) containing:
+
+- **Chapter selector**: Dropdown with prev/next arrows (like MangaFire's "Chapter 1" with arrows)
+- **Page indicator**: "Page X/Total" display
+- **Quick actions**: Bookmark, Manga Detail link, Report Error buttons
+- **Reader settings toggles**:
+  - "Header Sticky" -- toggle sticky header on/off
+  - "Long Strip" vs "Page by Page" reading mode
+  - "Fit Width" -- toggle between fit-width and original size
+  - "Left to Right" / "Right to Left" reading direction
+- **Bottom Progress Bar**: A thin progress bar at the bottom showing scroll position through the chapter
+
+### 3b. Top Navigation Bar Improvements
+
+- Add chapter info display: "Chapter X/Y" and "Page X/Z" in the header bar
+- Add a compact chapter dropdown selector in the header
+
+### 3c. Keyboard Navigation
+
+- Left/Right arrow keys for prev/next chapter
+- Escape to close sidebar
+
+### Files Changed
+
+1. `supabase/functions/paypal-purchase/index.ts` -- remove `payment_source` from create-order
+2. `src/pages/Series.tsx` -- add sorting, filter chips, collapsible genres, empty state, extra statuses
+3. `src/pages/ChapterReader.tsx` -- add settings sidebar, progress bar, keyboard nav, reading mode options
 
