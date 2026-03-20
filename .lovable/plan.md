@@ -1,36 +1,37 @@
 
 
-# Fix PayPal CURRENCY_NOT_SUPPORTED Error
+# Fix Light Mode Not Working With Theme Presets
 
 ## Root Cause
 
-The PayPal error screenshot shows `CURRENCY_NOT_SUPPORTED` (HTTP 422) on `/v2/checkout/orders`. The PayPal account (MangaZ app) does not support INR as a currency. The current code:
-1. Loads the SDK with `currency=INR`
-2. Creates orders with `currency_code: "INR"` and converts USD prices to INR values
+The previous FOUC fix added three layers of hardcoded dark backgrounds that **cannot be overridden** by theme toggling:
 
-Both must switch to USD.
+1. **`index.html` line 14-15**: `<style>` block with `:root { background: #0a0a0a; }` and `body { background: #0a0a0a; }` — these are unconditional CSS rules
+2. **`index.html` line 30**: `<body style="background-color:#0a0a0a;color:#ffffff">` — inline style has the highest CSS specificity, so Tailwind's `bg-background` class (which uses CSS variables) can never override it
+3. The body's Tailwind class `bg-background` in `index.css` correctly resolves to `hsl(var(--background))`, but the inline style wins every time
 
-## Changes
+When the user toggles to light mode, `applyTheme()` correctly sets `--background` to the light value, and the `.dark` class is removed. But the body's inline style (`background-color:#0a0a0a`) never changes, so the dark background persists.
 
-### 1. Edge Function (`supabase/functions/paypal-purchase/index.ts`)
+## Fix
 
-- Remove the `USD_TO_INR` mapping entirely
-- In the `create-order` action, use `currency_code: "USD"` with the original USD price value (e.g. `"0.99"`) instead of converting to INR
-- Keep everything else (auth, capture, coin crediting) unchanged
+### 1. `index.html`
 
-### 2. Frontend (`src/pages/CoinShop.tsx`)
+- Remove the inline `style` attribute from `<body>` entirely
+- Change the `<style>` block to scope the dark background under the `.dark` class so it only applies when dark mode is active:
 
-- Change the PayPal SDK script URL from `currency=INR` to `currency=USD` (line 144)
-- No other frontend changes needed — the `amount: selectedPrice` already sends USD values
+```css
+:root.dark { background: #0a0a0a; }
+.dark body { background: #0a0a0a; color: #ffffff; margin: 0; }
+body { margin: 0; }
+```
 
-### 3. Redeploy
+This preserves FOUC prevention (page starts with `class="dark"` on `<html>`) while allowing light mode to work when the class is removed.
 
-- Redeploy the `paypal-purchase` edge function
+### 2. `src/index.css` (no change needed)
 
-## What stays the same
+The existing `body { @apply bg-background text-foreground; }` will now work correctly since the inline style no longer overrides it.
 
-- Package selection UI, INR display labels, payment method cards, admin panel — all untouched
-- Stripe and USDT flows untouched
-- Capture logic, coin crediting, idempotency check — all unchanged
-- The `createOrder`/`onApprove`/`onCancel`/`onError` callback structure stays as-is
+### 3. No other changes
+
+The `ThemeContext.tsx`, `themes.ts`, and `applyTheme()` logic are all correct. The only problem was the hardcoded inline styles.
 
