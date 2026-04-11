@@ -312,31 +312,93 @@ export function StorageSection({ settingsForm, setSettingsForm }: StorageSection
             </button>
 
             {bloggerTutorialOpen && (
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3 text-sm text-muted-foreground border border-border/40">
-                <p className="font-semibold text-foreground text-xs uppercase tracking-wider">Regenerate Google Token with Drive Scope</p>
-
-                <div className="space-y-2">
-                  <p className="font-medium text-foreground text-xs">Steps</p>
-                  <ol className="list-decimal list-inside space-y-1 text-xs pl-2">
-                    <li>Go to <a href="https://developers.google.com/oauthplayground" target="_blank" rel="noopener" className="text-primary underline">OAuth 2.0 Playground</a></li>
-                    <li>Click the ⚙️ gear icon → check <strong>"Use your own OAuth credentials"</strong></li>
-                    <li>Enter your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
-                    <li>In the left panel, select <strong>both</strong> scopes:
-                      <ul className="list-disc list-inside pl-4 mt-1 space-y-1">
-                        <li><code className="bg-muted px-1 rounded text-[10px]">https://www.googleapis.com/auth/blogger</code></li>
-                        <li><code className="bg-muted px-1 rounded text-[10px]">https://www.googleapis.com/auth/drive.file</code></li>
-                      </ul>
-                    </li>
-                    <li>Click <strong>"Authorize APIs"</strong> → Sign in → Allow</li>
-                    <li>Click <strong>"Exchange authorization code for tokens"</strong></li>
-                    <li>Copy the <strong>Refresh Token</strong> and paste it above</li>
-                  </ol>
+              <div className="bg-muted/30 rounded-xl p-5 space-y-4 text-sm text-muted-foreground border border-border/40 overflow-hidden">
+                <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Icon icon="ph:book-open-bold" className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground text-xs uppercase tracking-wider">Blogger (Google Drive) CDN Setup</p>
                 </div>
 
-                <div className="flex items-start gap-2 p-2.5 bg-amber-500/10 rounded-lg">
-                  <Icon icon="ph:warning-bold" className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
-                    <strong>Tip:</strong> If this seems complex, just use <strong>Imgur CDN</strong> — it's much simpler and works perfectly for manga hosting.
+                <div className="space-y-4">
+                  {/* Phase 1 */}
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground mb-1.5 flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px]">1</span>
+                      Get your Blog ID
+                    </h4>
+                    <p className="text-[11px] leading-relaxed pl-6">
+                      Open your blog in the <a href="https://www.blogger.com" target="_blank" rel="noopener" className="text-primary underline">Blogger Dashboard</a>. 
+                      Copy the number at the end of the URL (e.g., <code>.../blog/dashboard/<span className="text-primary font-bold">123456789...</span></code>). 
+                      <em>(Note: Currently used for metadata, but required for setup).</em>
+                    </p>
+                  </div>
+
+                  {/* Phase 2 */}
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground mb-1.5 flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px]">2</span>
+                      Configure Google Cloud Project
+                    </h4>
+                    <p className="text-[11px] leading-relaxed pl-6 mb-2">
+                      Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" className="text-primary underline">Google Cloud Console</a> and create a <strong>New Project</strong>.
+                    </p>
+                    <ul className="list-disc list-inside pl-8 space-y-2 text-[11px]">
+                      <li>
+                        <strong>Enable APIs:</strong> Search and enable both <code>Blogger API v3</code> and <code>Google Drive API</code>.
+                      </li>
+                      <li>
+                        <strong>OAuth Consent:</strong> Choose <strong>External</strong> status. Add your email and developer info. 
+                        Add these scopes: <code>.../auth/blogger</code> and <code>.../auth/drive.file</code>. 
+                        <strong>Publish</strong> the app to Move it out of "Testing" status.
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Phase 3 */}
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground mb-1.5 flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px]">3</span>
+                      Create OAuth Credentials
+                    </h4>
+                    <p className="text-[11px] leading-relaxed pl-6 mb-2">
+                      Go to <strong>Credentials</strong> {'>'} <strong>Create Credentials</strong> {'>'} <strong>OAuth client ID</strong>.
+                    </p>
+                    <ul className="list-disc list-inside pl-8 space-y-1 text-[11px]">
+                      <li>Application type: <strong>Web application</strong>.</li>
+                      <li>Authorized redirect URIs: <code>https://developers.google.com/oauthplayground</code></li>
+                      <li>Copy the <strong>Client ID</strong> and <strong>Client Secret</strong> into the fields above.</li>
+                    </ul>
+                  </div>
+
+                  {/* Phase 4 */}
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground mb-1.5 flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px]">4</span>
+                      Generate Refresh Token
+                    </h4>
+                    <p className="text-[11px] leading-relaxed pl-6 mb-2">
+                      Open <a href="https://developers.google.com/oauthplayground" target="_blank" rel="noopener" className="text-primary underline">OAuth 2.0 Playground</a>:
+                    </p>
+                    <ol className="list-decimal list-inside pl-8 space-y-1 text-[11px]">
+                      <li>Click the <strong>Settings (Gear)</strong> icon.</li>
+                      <li>Check <strong>"Use your own OAuth credentials"</strong> and enter your ID / Secret.</li>
+                      <li>Under "Select & authorize APIs", paste these two URLs:
+                        <div className="bg-muted p-1.5 rounded mt-1 font-mono text-[10px] select-all">
+                          https://www.googleapis.com/auth/blogger https://www.googleapis.com/auth/drive.file
+                        </div>
+                      </li>
+                      <li>Click <strong>Authorize</strong> {'>'} Choose Account {'>'} Allow.</li>
+                      <li>Click <strong>Exchange authorization code for tokens</strong>.</li>
+                      <li>Copy the <strong>Refresh Token</strong> into the field above and save settings.</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-xl border border-primary/20 mt-4">
+                  <Icon icon="ph:magic-wand-bold" className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                  <p className="text-[11px] leading-tight text-foreground/80">
+                    <strong>Why use this?</strong> Images are stored on Google Drive but served via a blazing-fast <code>lh3.googleusercontent.com</code> direct link, giving you <strong>unlimited bandwidth</strong> and no storage costs.
                   </p>
                 </div>
               </div>
