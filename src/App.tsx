@@ -24,6 +24,7 @@ const EarnCoins = lazy(() => import("./pages/EarnCoins"));
 const CoinShop = lazy(() => import("./pages/CoinShop"));
 const UserSettings = lazy(() => import("./pages/UserSettings"));
 const DMCA = lazy(() => import("./pages/DMCA"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const Subscribe = lazy(() => import("./pages/Subscribe"));
 const SubscribeCheckout = lazy(() => import("./pages/SubscribeCheckout"));
@@ -49,7 +50,24 @@ const AppLayout = () => {
   const hideShell = isChapterReader || isAdminPanel;
 
   if (isLoading) {
-    return <div style={{ background: '#0a0a0a', width: '100vw', height: '100vh' }} />;
+    return (
+      <div className="fixed inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center z-[9999]">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-2xl bg-primary/20 animate-pulse border border-primary/30 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary shadow-[0_0_30px_rgba(var(--primary),0.4)] animate-bounce flex items-center justify-center">
+              <span className="text-2xl font-black text-primary-foreground italic">MZ</span>
+            </div>
+          </div>
+          <div className="absolute -inset-4 bg-primary/10 blur-3xl animate-pulse rounded-full -z-1" />
+        </div>
+        <div className="mt-8 space-y-2 text-center">
+          <h2 className="text-white font-black tracking-tighter text-xl uppercase italic">MangaZ</h2>
+          <div className="w-48 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
+            <div className="h-full bg-primary animate-loading-bar" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -70,6 +88,7 @@ const AppLayout = () => {
             <Route path="/coin-shop" element={<CoinShop />} />
             <Route path="/settings" element={<UserSettings />} />
             <Route path="/dmca" element={<DMCA />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/subscribe/checkout/:planId" element={<SubscribeCheckout />} />

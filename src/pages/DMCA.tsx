@@ -218,11 +218,8 @@ export default function DMCA() {
         </Card>
       )}
 
-      <p className="text-xs text-muted-foreground mt-8">
-        For general inquiries, please contact us at{' '}
-        <a href="mailto:dmca@chapterhaven.io" className="text-primary hover:underline">
-          dmca@chapterhaven.io
-        </a>
+      <p className="text-xs text-muted-foreground mt-8 text-center pt-8 border-t border-border/50 uppercase tracking-widest font-bold">
+        END OF POLICY
       </p>
     </div>
   );

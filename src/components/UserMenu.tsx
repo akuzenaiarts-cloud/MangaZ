@@ -183,30 +183,30 @@ export default function UserMenu() {
               </Button>
             </Link>
 
-            {isMobile ? (
-              <>
-                <div className="h-px bg-border/40 my-1.5" />
-                <div className="flex gap-2">
-                  <Link to="/dmca" onClick={close} className="flex-1">
-                    <Button variant="ghost" className="w-full rounded-xl h-10 bg-muted/50 hover:bg-muted gap-2 text-sm font-medium justify-center">
-                      <Icon icon="ph:shield-check-bold" className="w-4 h-4" /> DMCA
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    className="flex-1 rounded-xl h-10 bg-destructive/10 hover:bg-destructive/20 text-destructive gap-2 text-sm font-medium justify-center"
-                    onClick={() => { logout(); close(); }}
-                  >
-                    <Icon icon="ph:sign-out-bold" className="w-4 h-4" /> Logout
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <Link to="/dmca" onClick={close}>
-                <Button variant="ghost" className="w-full justify-start gap-2.5 rounded-xl h-10 hover:bg-muted text-sm font-medium">
+            <div className="flex gap-2">
+              <Link to="/dmca" onClick={close} className="flex-1">
+                <Button variant="ghost" className="w-full rounded-xl h-10 bg-muted/50 hover:bg-muted gap-1.5 text-[13px] font-medium justify-center">
                   <Icon icon="ph:shield-check-bold" className="w-4 h-4" /> DMCA
                 </Button>
               </Link>
+              <Link to="/privacy" onClick={close} className="flex-1">
+                <Button variant="ghost" className="w-full rounded-xl h-10 bg-muted/50 hover:bg-muted gap-1.5 text-[13px] font-medium justify-center">
+                  <Icon icon="ph:lock-key-bold" className="w-4 h-4" /> Privacy
+                </Button>
+              </Link>
+            </div>
+
+            {isMobile && (
+              <>
+                <div className="h-px bg-border/40 my-1.5" />
+                <Button
+                  variant="ghost"
+                  className="w-full rounded-xl h-10 bg-destructive/10 hover:bg-destructive/20 text-destructive gap-2 text-sm font-medium justify-center"
+                  onClick={() => { logout(); close(); }}
+                >
+                  <Icon icon="ph:sign-out-bold" className="w-4 h-4" /> Logout
+                </Button>
+              </>
             )}
           </div>
 

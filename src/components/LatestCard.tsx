@@ -64,11 +64,11 @@ function ChapterRow({ ch, slug, currencyIconUrl, subBadgeLabel }: { ch: ChapterE
       <span className="flex items-center gap-1 text-muted-foreground hover:text-foreground truncate">
         <span className="truncate font-medium">Chapter {ch.number}</span>
         {(() => {
-          const isSub = !!ch.is_subscription && (!ch.subscription_free_release_at || new Date(ch.subscription_free_release_at).getTime() > Date.now());
-          const isPrem = !!ch.premium && (!ch.free_release_at || new Date(ch.free_release_at).getTime() > Date.now());
+          const isSubActive = !!ch.is_subscription && (!ch.subscription_free_release_at || new Date(ch.subscription_free_release_at).getTime() > Date.now());
+          const isPremActive = !isSubActive && !!ch.premium && (!ch.free_release_at || new Date(ch.free_release_at).getTime() > Date.now());
           
-          if (isSub) return <Icon icon="mdi:latest" className="w-4 h-4 text-amber-400 shrink-0 ml-0.5" />;
-          if (isPrem) return <CurrencyIcon iconUrl={currencyIconUrl} className="w-4 h-4 text-amber-400 shrink-0 ml-0.5" />;
+          if (isSubActive) return <Icon icon="mdi:latest" className="w-4 h-4 text-amber-400 shrink-0 ml-0.5" />;
+          if (isPremActive) return <CurrencyIcon iconUrl={currencyIconUrl} className="w-4 h-4 text-amber-400 shrink-0 ml-0.5" />;
           return null;
         })()}
         {isNewChapter(ch.created_at) && !ch.is_subscription && <NewBadge />}
@@ -104,18 +104,21 @@ export default function LatestCard({ manga }: LatestCardProps) {
 
   const now = Date.now();
   const allPremium = chapters.filter(ch => {
-    const subExpired = !!ch.is_subscription && !!ch.subscription_free_release_at && new Date(ch.subscription_free_release_at).getTime() <= now;
-    const premExpired = !!ch.premium && !!ch.free_release_at && new Date(ch.free_release_at).getTime() <= now;
-    const isActuallySub = !!ch.is_subscription && !subExpired;
-    const isActuallyPrem = !!ch.premium && !premExpired;
-    return isActuallySub || isActuallyPrem;
+    // A chapter is effectively subscription-only if is_subscription is true AND (count-down not set OR count-down in future)
+    const isSubActive = !!ch.is_subscription && (!ch.subscription_free_release_at || new Date(ch.subscription_free_release_at).getTime() > now);
+    // A chapter is effectively coin-only if premium is true AND is_subscription is false AND (count-down not set OR count-down in future)
+    // We prioritize subscription-only status if both are true (though they usually aren't)
+    const isPremActive = !isSubActive && !!ch.premium && (!ch.free_release_at || new Date(ch.free_release_at).getTime() > now);
+    
+    return isSubActive || isPremActive;
   }).sort(sortByDate);
 
   const allFree = chapters.filter(ch => {
-    const subExpired = !!ch.is_subscription && !!ch.subscription_free_release_at && new Date(ch.subscription_free_release_at).getTime() <= now;
-    const premExpired = !!ch.premium && !!ch.free_release_at && new Date(ch.free_release_at).getTime() <= now;
+    const isSubExpired = !!ch.is_subscription && !!ch.subscription_free_release_at && new Date(ch.subscription_free_release_at).getTime() <= now;
+    const isPremExpired = !!ch.premium && !!ch.free_release_at && new Date(ch.free_release_at).getTime() <= now;
     const isFreeBase = !ch.premium && !ch.is_subscription;
-    return isFreeBase || subExpired || premExpired;
+    
+    return isFreeBase || isSubExpired || isPremExpired;
   }).sort(sortByDate);
 
   let premiumChapters: ChapterEntry[];

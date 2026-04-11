@@ -7,8 +7,6 @@ export interface PremiumGeneralSettings {
   payment_stripe_secret_key: string;
   payment_paypal_client_id: string;
   payment_paypal_secret: string;
-  payment_razorpay_key_id: string;
-  payment_razorpay_key_secret: string;
   payment_usdt_address: string;
   payment_usdt_network: 'TRC20' | 'ERC20';
   payment_cryptomus_merchant_id?: string;
@@ -22,7 +20,6 @@ export interface PremiumConfig {
   enable_subscriptions: boolean;
   enable_stripe: boolean;
   enable_paypal: boolean;
-  enable_razorpay: boolean;
   enable_usdt: boolean;
 }
 
@@ -92,8 +89,6 @@ const DEFAULTS: AllPremiumSettings = {
     payment_stripe_secret_key: '',
     payment_paypal_client_id: '',
     payment_paypal_secret: '',
-    payment_razorpay_key_id: '',
-    payment_razorpay_key_secret: '',
     payment_usdt_address: '',
     payment_usdt_network: 'TRC20',
   },
@@ -102,7 +97,6 @@ const DEFAULTS: AllPremiumSettings = {
     enable_subscriptions: false,
     enable_stripe: false,
     enable_paypal: false,
-    enable_razorpay: false,
     enable_usdt: false,
   },
   coin_system: {

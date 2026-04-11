@@ -29,6 +29,7 @@ export default function PremiumContent() {
   // Payment method toggles
   const [enableStripe, setEnableStripe] = useState(false);
   const [enablePaypal, setEnablePaypal] = useState(false);
+  // USDT / Cryptomus
   const [enableUsdt, setEnableUsdt] = useState(false);
 
   // Stripe
@@ -40,21 +41,13 @@ export default function PremiumContent() {
   const [paypalSecret, setPaypalSecret] = useState('');
   const [paypalSandbox, setPaypalSandbox] = useState(false);
 
-  // USDT / NOWPayments
-  const [usdtAddress, setUsdtAddress] = useState('');
-  const [usdtNetwork, setUsdtNetwork] = useState<'TRC20' | 'ERC20'>('TRC20');
+  // USDT / Cryptomus
   const [cryptomusMerchantId, setCryptomusMerchantId] = useState('');
   const [cryptomusPaymentKey, setCryptomusPaymentKey] = useState('');
-
-  // Razorpay
-  const [enableRazorpay, setEnableRazorpay] = useState(false);
-  const [razorpayKeyId, setRazorpayKeyId] = useState('');
-  const [razorpaySecret, setRazorpaySecret] = useState('');
 
   // Tutorial expansion
   const [stripeTutorialOpen, setStripeTutorialOpen] = useState(false);
   const [paypalTutorialOpen, setPaypalTutorialOpen] = useState(false);
-  const [razorpayTutorialOpen, setRazorpayTutorialOpen] = useState(false);
   const [usdtTutorialOpen, setUsdtTutorialOpen] = useState(false);
 
   // Coin system form
@@ -89,18 +82,13 @@ export default function PremiumContent() {
       setEnableSubs(config.enable_subscriptions);
       setEnableStripe(config.enable_stripe);
       setEnablePaypal(config.enable_paypal);
-      setEnableRazorpay(config.enable_razorpay);
       setEnableUsdt(config.enable_usdt);
 
       setStripePublicKey(general.payment_stripe_public_key);
       setStripeSecretKey(general.payment_stripe_secret_key);
       setPaypalClientId(general.payment_paypal_client_id);
       setPaypalSecret(general.payment_paypal_secret);
-      setUsdtAddress(general.payment_usdt_address);
-      setUsdtNetwork(general.payment_usdt_network);
       setPaypalSandbox(general.payment_paypal_sandbox ?? false);
-      setRazorpayKeyId(general.payment_razorpay_key_id ?? '');
-      setRazorpaySecret(general.payment_razorpay_key_secret ?? '');
       setCryptomusMerchantId(general.payment_cryptomus_merchant_id ?? '');
       setCryptomusPaymentKey(general.payment_cryptomus_payment_key ?? '');
 
@@ -160,7 +148,6 @@ export default function PremiumContent() {
             enable_subscriptions: enableSubs,
             enable_stripe: enableStripe,
             enable_paypal: enablePaypal,
-            enable_razorpay: enableRazorpay,
             enable_usdt: enableUsdt,
           },
         }),
@@ -172,10 +159,6 @@ export default function PremiumContent() {
             payment_paypal_client_id: paypalClientId,
             payment_paypal_secret: paypalSecret,
             payment_paypal_sandbox: paypalSandbox,
-            payment_razorpay_key_id: razorpayKeyId,
-            payment_razorpay_key_secret: razorpaySecret,
-            payment_usdt_address: usdtAddress,
-            payment_usdt_network: usdtNetwork,
             payment_cryptomus_merchant_id: cryptomusMerchantId,
             payment_cryptomus_payment_key: cryptomusPaymentKey,
           },
@@ -318,52 +301,7 @@ export default function PremiumContent() {
             </div>
           </div>
 
-          {/* ─── RAZORPAY ─── */}
-          <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                  <Icon icon="ph:credit-card-bold" className="w-4.5 h-4.5 text-indigo-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm">Razorpay</h3>
-                  <p className="text-xs text-muted-foreground">Accept cards & local payments in India</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <StatusBadge configured={!!razorpayKeyId && !!razorpaySecret} enabled={enableRazorpay} />
-                <Switch checked={enableRazorpay} onCheckedChange={setEnableRazorpay} />
-              </div>
-            </div>
 
-            {enableRazorpay && (
-              <div className="space-y-3 pt-3 border-t border-border">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Key ID</label>
-                  <Input value={razorpayKeyId} onChange={e => setRazorpayKeyId(e.target.value)} className="rounded-xl bg-background font-mono text-xs" placeholder="rzp_live_..." />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Key Secret</label>
-                  <Input type="password" value={razorpaySecret} onChange={e => setRazorpaySecret(e.target.value)} className="rounded-xl bg-background font-mono text-xs" placeholder="••••••••••••" />
-                </div>
-
-                <TutorialToggle open={razorpayTutorialOpen} onToggle={() => setRazorpayTutorialOpen(!razorpayTutorialOpen)} label="How to get Razorpay keys" />
-                {razorpayTutorialOpen && (
-                  <div className="bg-muted/30 rounded-xl p-4 space-y-2 text-sm text-muted-foreground border border-border/40">
-                    <p className="font-semibold text-foreground text-xs uppercase tracking-wider">Setup Guide</p>
-                    <ol className="list-decimal list-inside space-y-1.5 text-xs">
-                      <li>Go to <a href="https://dashboard.razorpay.com" target="_blank" rel="noopener" className="text-primary underline">dashboard.razorpay.com</a> and sign up.</li>
-                      <li>Complete the KYC process and activate your account.</li>
-                      <li>Navigate to <strong>Settings → API Keys</strong>.</li>
-                      <li>Click <strong>"Generate Key"</strong> or use existing keys (starts with <code className="bg-muted px-1 rounded">rzp_live_</code> or <code className="bg-muted px-1 rounded">rzp_test_</code>).</li>
-                      <li>Copy the <strong>Key ID</strong> and <strong>Key Secret</strong>.</li>
-                      <li>Paste them above and click <strong>Save</strong>.</li>
-                    </ol>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
 
           {/* ─── STRIPE ─── */}
           <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
@@ -466,17 +404,17 @@ export default function PremiumContent() {
                       <li>For testing: toggle to <strong>Sandbox</strong> mode at the top of the page and use sandbox credentials. Enable the "Sandbox Mode" toggle above.</li>
                       <li>For live payments: toggle to <strong>Live</strong> mode and use live credentials. Disable "Sandbox Mode" above.</li>
                     </ol>
-                    <div className="flex items-start gap-2 p-2 bg-blue-500/10 rounded-lg mt-2">
-                      <Icon icon="ph:info-bold" className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" />
-                      <p className="text-xs text-blue-600 dark:text-blue-400">PayPal sandbox lets you test with fake money. Create sandbox buyer/seller accounts at developer.paypal.com → Sandbox → Accounts.</p>
-                    </div>
                   </div>
                 )}
+                <div className="flex items-start gap-2 p-2 bg-blue-500/10 rounded-lg mt-2">
+                  <Icon icon="ph:info-bold" className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-blue-600 dark:text-blue-400">PayPal sandbox lets you test with fake money. Create sandbox buyer/seller accounts at developer.paypal.com.</p>
+                </div>
               </div>
             )}
           </div>
 
-          {/* ─── USDT / NOWPayments ─── */}
+          {/* ─── CRYPTOMUS ─── */}
           <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -484,8 +422,8 @@ export default function PremiumContent() {
                   <Icon icon="ph:currency-circle-dollar-bold" className="w-4.5 h-4.5 text-emerald-500" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">USDT (Crypto via Cryptomus)</h3>
-                  <p className="text-xs text-muted-foreground">Accept USDT via Binance Smart Chain</p>
+                  <h3 className="font-semibold text-sm">USDT (via Cryptomus)</h3>
+                  <p className="text-xs text-muted-foreground">Accept USDT & Crypto via Cryptomus Gateway</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -496,36 +434,33 @@ export default function PremiumContent() {
 
             {enableUsdt && (
               <div className="space-y-3 pt-3 border-t border-border">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Network</label>
-                  <Select value={usdtNetwork} onValueChange={(v) => setUsdtNetwork(v as 'TRC20' | 'ERC20')}>
-                    <SelectTrigger className="rounded-xl bg-background w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="TRC20">BSC (BEP-20) — Recommended</SelectItem>
-                      <SelectItem value="ERC20">ERC20 (Ethereum)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Merchant ID</label>
+                    <Input type="text" value={cryptomusMerchantId} onChange={e => setCryptomusMerchantId(e.target.value)} className="rounded-xl bg-background font-mono text-xs" placeholder="Your Cryptomus Merchant ID" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Payment API Key</label>
+                    <Input type="password" value={cryptomusPaymentKey} onChange={e => setCryptomusPaymentKey(e.target.value)} className="rounded-xl bg-background font-mono text-xs" placeholder="••••••••••••" />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Cryptomus Merchant ID</label>
-                  <Input type="text" value={cryptomusMerchantId} onChange={e => setCryptomusMerchantId(e.target.value)} className="rounded-xl bg-background font-mono text-xs" placeholder="Merchant ID" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Cryptomus Payment Key</label>
-                  <Input type="password" value={cryptomusPaymentKey} onChange={e => setCryptomusPaymentKey(e.target.value)} className="rounded-xl bg-background font-mono text-xs" placeholder="Payment API Key" />
+
+                <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-xl flex gap-3">
+                  <Icon icon="ph:info-bold" className="w-4 h-4 text-blue-500 mt-0.5" />
+                  <p className="text-[11px] text-blue-600 dark:text-blue-400">
+                    <strong>Crypto Setup:</strong> Cryptomus allows you to accept USDT over multiple networks.
+                  </p>
                 </div>
 
                 <TutorialToggle open={usdtTutorialOpen} onToggle={() => setUsdtTutorialOpen(!usdtTutorialOpen)} label="How to set up Cryptomus" />
                 {usdtTutorialOpen && (
                   <div className="bg-muted/30 rounded-xl p-4 space-y-2 text-sm text-muted-foreground border border-border/40">
-                    <p className="font-semibold text-foreground text-xs uppercase tracking-wider">Setup Guide — Cryptomus (USDT)</p>
+                    <p className="font-semibold text-foreground text-xs uppercase tracking-wider">Setup Guide — Cryptomus</p>
                     <ol className="list-decimal list-inside space-y-1.5 text-xs">
                       <li>Go to <a href="https://cryptomus.com" target="_blank" rel="noopener" className="text-primary underline">cryptomus.com</a> and sign up.</li>
-                      <li>Create a new Merchant project and pass their basic moderation (takes a few hours).</li>
-                      <li>In your merchant settings, generate your API Keys.</li>
-                      <li>Copy your <strong>Merchant ID</strong> and <strong>Payment Key</strong>, then paste them above.</li>
+                      <li>Create a new Merchant project and complete reactivation.</li>
+                      <li>In your merchant settings, navigate to <strong>API & Integration</strong>.</li>
+                      <li>Copy your <strong>Merchant ID</strong> and <strong>Payment Key</strong>.</li>
                     </ol>
                   </div>
                 )}
