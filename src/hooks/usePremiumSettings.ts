@@ -128,8 +128,8 @@ const DEFAULTS: AllPremiumSettings = {
     comment_streak_days: 3,
   },
   subscription_settings: {
-    subscription_name: 'Subscription',
-    badge_label: 'Early Access',
+    subscription_name: '',
+    badge_label: '',
     bonus_coins_enabled: true,
     double_daily_login_enabled: true,
     show_subscriber_count: true,

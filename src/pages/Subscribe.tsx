@@ -30,7 +30,7 @@ export default function SubscribePage() {
   const { settings: siteSettings } = useSiteSettings();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const subName = premiumSettings?.subscription_settings?.subscription_name || 'Subscription';
+  const subName = premiumSettings?.subscription_settings?.subscription_name || 'Subscribe';
   const badgeLabel = premiumSettings?.subscription_settings?.badge_label || 'Early Access';
   const showSubCount = premiumSettings?.subscription_settings?.show_subscriber_count ?? true;
   const bonusCoinsEnabled = premiumSettings?.subscription_settings?.bonus_coins_enabled ?? true;
