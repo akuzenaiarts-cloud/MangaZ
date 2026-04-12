@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { cachedFetch } from "@/lib/cachedFetch";
 
 type Manga = Tables<"manga">;
 type Chapter = Tables<"chapters">;
@@ -11,15 +11,13 @@ export const useAllManga = () => {
   return useQuery({
     queryKey: ["all-manga"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("manga")
-        .select("*, chapters(id, number, title, created_at, premium, free_release_at, is_subscription, subscription_free_release_at)")
-        .order("updated_at", { ascending: false });
+      const data = await cachedFetch<MangaWithChapters[]>("manga", {
+        select: "*, chapters(id, number, title, created_at, premium, free_release_at, is_subscription, subscription_free_release_at)",
+        order: { column: "updated_at", ascending: false }
+      });
 
-      if (error) throw error;
-      
-      // Sort chapters by number descending and limit to 4
-      return (data as MangaWithChapters[]).map(m => ({
+      // Sort chapters by number descending
+      return data.map(m => ({
         ...m,
         chapters: (m.chapters || [])
           .sort((a, b) => b.number - a.number),

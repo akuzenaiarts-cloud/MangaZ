@@ -503,7 +503,7 @@ export default function PremiumContent() {
                          Get API Credentials
                        </p>
                        <ul className="list-disc list-inside pl-7 space-y-1 text-xs">
-                         <li>Inside your project dashboard, go to <strong>Settings -> API & Integration</strong>.</li>
+                         <li>Inside your project dashboard, go to <strong>Settings → API & Integration</strong>.</li>
                          <li>Copy the <strong>Merchant ID</strong> and paste it above.</li>
                          <li>Create a <strong>Payment API Key</strong> (it might be called "IPN Secret" or "Key"). Copy and paste it into the "Payment API Key" field.</li>
                        </ul>
@@ -521,7 +521,7 @@ export default function PremiumContent() {
                          [YOUR_SUPABASE_URL]/functions/v1/cryptomus-webhook
                        </div>
                        <p className="text-[10px] pl-7 text-amber-500 font-medium italic">
-                         * Replace [YOUR_SUPABASE_URL] with your projects API URL (found in Settings -> API).
+                         * Replace [YOUR_SUPABASE_URL] with your projects API URL (found in Settings → API).
                        </p>
                     </div>
 
@@ -537,7 +537,8 @@ export default function PremiumContent() {
               </div>
             )}
           </div>
-
+          </div>
+          
           <Button className="rounded-xl gap-2" onClick={saveGeneral} disabled={updatePremiumSettings.isPending}>
             <Icon icon="ph:floppy-disk-bold" className="w-4 h-4" /> Save General Settings
           </Button>

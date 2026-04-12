@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cachedFetch } from '@/lib/cachedFetch';
 
 export interface GeneralSettings {
+// ... (omitting unchanged interfaces for brevity in thinking, but will include in the tool call)
   site_name: string;
   site_description: string;
   footer_text: string;
@@ -82,11 +84,9 @@ export const useSiteSettings = () => {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('key, value');
-
-      if (error) throw error;
+      const data = await cachedFetch<{ key: string; value: any }[]>('site_settings', {
+        select: 'key, value'
+      });
 
       const result = { ...DEFAULT_SETTINGS };
       for (const row of (data || [])) {

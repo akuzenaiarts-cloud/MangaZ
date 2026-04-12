@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cachedFetch } from '@/lib/cachedFetch';
 
 interface TrendingManga {
   id: string;
@@ -54,12 +55,12 @@ export function useTrendingManga(limit = 6) {
 
       if (ranked.length === 0) return [];
 
-      // Fetch manga details
+      // Fetch manga details using cachedFetch
       const mangaIds = ranked.map(r => r[0]);
-      const { data: mangaData } = await supabase
-        .from('manga')
-        .select('id, title, slug, cover_url, type, genres, status')
-        .in('id', mangaIds);
+      const mangaData = await cachedFetch<TrendingManga[]>("manga", {
+        select: "id, title, slug, cover_url, type, genres, status",
+        filters: [{ column: "id", operator: "in", value: mangaIds }]
+      });
 
       if (!mangaData) return [];
 

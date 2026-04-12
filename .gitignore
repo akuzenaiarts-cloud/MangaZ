@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables (contains API keys)
+.env
+.env.*
+.dev.vars
+
+# Database backups
+backup_*.sql

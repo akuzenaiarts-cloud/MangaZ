@@ -491,7 +491,7 @@ export default function SubscriptionSystemTab({ settings, updatePremiumSettings 
                        Get API Credentials
                      </p>
                      <ul className="list-disc list-inside pl-7 space-y-1 text-xs">
-                       <li>Go to <strong>Settings -> API & Integration</strong> in your Cryptomus project.</li>
+                       <li>Go to <strong>Settings → API & Integration</strong> in your Cryptomus project.</li>
                        <li>Copy the <strong>Merchant ID</strong> and <strong>Payment Key</strong> (IPN Secret).</li>
                        <li>Paste them into the fields above.</li>
                      </ul>
